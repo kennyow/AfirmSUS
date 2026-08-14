@@ -1,0 +1,55 @@
+[
+  {
+    "data": "Março / 2024",
+    "titulo": "Lançamento do Programa AfirmaSUS",
+    "categoria": "Saúde",
+    "cor_borda": "#28A745",
+    "descricao": "Início das atividades do Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade na Área da Saúde.",
+    "fotos": [
+      "https://drive.google.com/file/d/1R-5oTgdT7fKLGlmKMstKVKcUvq6ucjIp/view?usp=drive_link",
+      "https://drive.google.com/file/d/1jA2d10ksMf5whn-K8MnRxAftYihtJTzK/view?usp=drive_link",
+      "COLE_AQUI_A_TERCEIRA_FOTO_DO_DRIVE"
+    ]
+  },
+  {
+    "data": "Maio / 2024",
+    "titulo": "Mapeamento Participativo em João Pessoa",
+    "categoria": "Cultura",
+    "cor_borda": "#D1C7A5",
+    "descricao": "Identificação dos equipamentos comunitários, unidades de saúde e pontos de cultura na comunidade São Rafael.",
+    "fotos": [
+      "LINK_DO_DRIVE_FOTO_1",
+      "LINK_DO_DRIVE_FOTO_2"
+    ]
+  },
+  {
+    "data": "Julho / 2024",
+    "titulo": "Oficinas de Esporte e Ações Estudantis",
+    "categoria": "Esporte e Lazer",
+    "cor_borda": "#FF8C00",
+    "descricao": "Articulação de projetos sociais de capoeira, futebol e artes marciais para integração dos discentes e moradores.",
+    "fotos": [
+      "LINK_DO_DRIVE_FOTO_1"
+    ]
+  },
+  {
+    "data": "Setembro / 2024",
+    "titulo": "Apresentação de Indicadores e Relatórios",
+    "categoria": "Educação",
+    "cor_borda": "#6f42c1",
+    "descricao": "Consolidação dos dados territoriais e diagnóstico da infraestrutura local para ações públicas do SUS.",
+    "fotos": [
+      "LINK_DO_DRIVE_FOTO_1"
+    ]
+  },
+  {
+    "data": "Novembro / 2024",
+    "titulo": "Expansão para Novos Distritos",
+    "categoria": "Religião",
+    "cor_borda": "#17A2B8",
+    "descricao": "Inclusão de pontos de fé, acolhimento e práticas integrativas nos demais distritos sanitários da capital.",
+    "fotos": [
+      "LINK_DO_DRIVE_FOTO_1"
+    ]
+  }
+]

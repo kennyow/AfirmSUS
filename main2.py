@@ -6,6 +6,21 @@ import folium
 import pandas as pd
 import json
 import os
+import re
+import streamlit as st
+
+
+
+# Função auxiliar para tratar URLs do Google Drive
+def converter_link_drive(url):
+    if not url or not isinstance(url, str):
+        return url
+    padrao_drive = r'(?:file/d/|id=)([\w-]+)'
+    match = re.search(padrao_drive, url)
+    if match:
+        file_id = match.group(1)
+        return f"https://lh3.googleusercontent.com/d/{file_id}"
+    return url
 
 # Configuração da Página
 st.set_page_config(
@@ -478,8 +493,11 @@ with col_detalhes:
                 ponto_encontrado = match.iloc[0]
 
     if ponto_encontrado is not None:
-        if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
-            st.image(ponto_encontrado["foto"], use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
+        if ponto_encontrado is not None:
+            if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
+                # Converte o link do Drive antes de passar para o st.image
+                foto_url = converter_link_drive(ponto_encontrado["foto"])
+                st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
         st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
         st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
         st.markdown(f"**Distrito:** `{ponto_encontrado.get('distrito', 'Não especificado')}`")
@@ -547,64 +565,79 @@ with v_col3:
 
 
 # ---------------------------------------------------------
-# 7. LINHA DO TEMPO HORIZONTAL (CORRIGIDA)
+# 7. LINHA DO TEMPO HORIZONTAL (VIA JSON COM DRIVE SLIDESHOW)
 # ---------------------------------------------------------
 st.divider()
 st.markdown('<div id="linha-do-tempo"></div>', unsafe_allow_html=True)
 st.subheader("🕐 Linha do Tempo - Programa AfirmaSUS")
 
-# Dados das Etapas/Eventos da Linha do Tempo
-eventos_timeline = [
-    {
-        "data": "Março / 2024",
-        "titulo": "Lançamento do Programa AfirmaSUS",
-        "categoria": "Saúde",
-        "cor_borda": "#28A745",
-        "descricao": "Início das atividades do Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade na Área da Saúde.",
-        "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a199bf07053a-ivp.jpg"
-    },
-    {
-        "data": "Maio / 2024",
-        "titulo": "Mapeamento Participativo em João Pessoa",
-        "categoria": "Cultura",
-        "cor_borda": "#D1C7A5",
-        "descricao": "Identificação dos equipamentos comunitários, unidades de saúde e pontos de cultura na comunidade São Rafael.",
-        "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a0f141214f53-usfsr.jpg"
-    },
-    {
-        "data": "Julho / 2024",
-        "titulo": "Oficinas de Esporte e Ações Estudantis",
-        "categoria": "Esporte e Lazer",
-        "cor_borda": "#FF8C00",
-        "descricao": "Articulação de projetos sociais de capoeira, futebol e artes marciais para integração dos discentes e moradores.",
-        "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d23fe9349f-whatsapp_image_2026-07-07_at_08.17.45.jpeg"
-    },
-    {
-        "data": "Setembro / 2024",
-        "titulo": "Apresentação de Indicadores e Relatórios",
-        "categoria": "Educação",
-        "cor_borda": "#6f42c1",
-        "descricao": "Consolidação dos dados territoriais e diagnóstico da infraestrutura local para ações públicas do SUS.",
-        "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d279c8241a-whatsapp_image_2026-07-07_at_08.30.50.jpeg"
-    },
-    {
-        "data": "Novembro / 2024",
-        "titulo": "Expansão para Novos Distritos",
-        "categoria": "Religião",
-        "cor_borda": "#17A2B8",
-        "descricao": "Inclusão de pontos de fé, acolhimento e práticas integrativas nos demais distritos sanitários da capital.",
-        "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d25b00c1ec-whatsapp_image_2026-07-07_at_08.17.05.jpeg"
-    }
-]
+# CSS para animação do carrossel/slideshow automático dentro do card
+st.markdown("""
+<style>
+.timeline-slider {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+.timeline-slider img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: fadeSlider 12s infinite;
+}
+@keyframes fadeSlider {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    40% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 0; }
+}
+</style>
+""", unsafe_allow_html=True)
 
-# Construção do HTML em linha única (sem recuos/espaços à esquerda)
+# Carrega os dados do arquivo JSON externo
+try:
+    with open("timeline.json", "r", encoding="utf-8") as f:
+        eventos_timeline = json.load(f)
+except Exception as e:
+    st.error(f"Erro ao carregar timeline.json: {e}")
+    eventos_timeline = []
+
+# Construção do HTML em linha única
 cards_html = []
 for ev in eventos_timeline:
-    tag_foto = f'<img src="{ev["foto"]}" class="timeline-img-h">' if ev.get("foto") else ''
+    # Trata lista de fotos ou fallback para foto única
+    lista_fotos_raw = ev.get("fotos", [])
+    if not lista_fotos_raw and ev.get("foto"):
+        lista_fotos_raw = [ev["foto"]]
     
-    # HTML sem identação inicial para o Streamlit não interpretar como bloco de código
+    # Converte links do Drive
+    fotos_convertidas = [converter_link_drive(url) for url in lista_fotos_raw]
+    
+    # Gera a tag da imagem/carrossel
+    if len(fotos_convertidas) > 1:
+        # Se tem mais de uma foto, gera o container slider
+        total_fotos = len(fotos_convertidas)
+        imgs_html = []
+        for idx, img_url in enumerate(fotos_convertidas):
+            delay = idx * (12 / total_fotos)
+            imgs_html.append(f'<img src="{img_url}" class="timeline-img-h" style="animation-delay: {delay}s;">')
+        tag_foto = f'<div class="timeline-slider">{"".join(imgs_html)}</div>'
+    elif len(fotos_convertidas) == 1:
+        # Se tem apenas uma foto
+        tag_foto = f'<img src="{fotos_convertidas[0]}" class="timeline-img-h">'
+    else:
+        tag_foto = ''
+
+    # HTML do Card
     card = (
-        f'<div class="timeline-card-h" style="border-top: 5px solid {ev["cor_borda"]};">'
+        f'<div class="timeline-card-h" style="border-top: 5px solid {ev.get("cor_borda", "#28A745")};">'
         f'<div>'
         f'<div class="timeline-date-h">📅 {ev["data"]}</div>'
         f'<div class="timeline-title-h">{ev["titulo"]}</div>'
@@ -615,7 +648,7 @@ for ev in eventos_timeline:
     )
     cards_html.append(card)
 
-# Junta todos os cards dentro do contêiner flex com scroll horizontal
+# Junta todos os cards dentro do container flex com scroll horizontal
 html_timeline = f'<div class="timeline-horizontal-scroll">{"".join(cards_html)}</div>'
 
 st.markdown(html_timeline, unsafe_allow_html=True)
