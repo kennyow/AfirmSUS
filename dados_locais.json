@@ -1,0 +1,312 @@
+[
+ 
+
+  {
+    "id": 2,
+    "nome": "Grupo Artes Marciais IVP",
+    "distrito": "Distrito I",
+    "categoria": "Esporte e Lazer",
+    "lat": -7.135262492691,
+    "lon": -34.855872094631,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d23fe9349f-whatsapp_image_2026-07-07_at_08.17.45.jpeg",
+    "descricao": "Ponto de atendimento de cultura e esportes",
+    "status": "Crítico",
+    "cor": "orange",
+    "icone": "person-running"
+  },
+
+  {
+    "id": 3,
+    "nome": "São Rafael Futebol Clube",
+    "distrito": "Distrito I",
+    "categoria": "Esporte e Lazer",
+    "lat": -7.1350301374827,
+    "lon": -34.855599850416,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a62128ae4689-whatsapp_image_2026-07-23_at_10.00.03.jpeg",
+    "descricao": "Ponto de atendimento de cultura e esportes",
+    "status": "Crítico",
+    "cor": "orange",
+    "icone": "person-running"
+  },
+
+   {
+    "id": 4,
+    "nome": "Grupo Viva Vida",
+    "distrito": "Distrito I",
+    "categoria": "Saúde",
+    "lat": -7.1345301384827,
+    "lon": -34.855599950416,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d274f22be4-whatsapp_image_2026-07-07_at_08.17.45_1.jpeg",
+    "descricao": "Ponto de atendimento de cultura",
+    "status": "Crítico",
+    "cor": "green",
+    "icone": "heart-pulse"
+  },
+
+  {
+    "id": 5,
+    "nome": "USF São Rafael",
+    "distrito": "Distrito I",
+    "categoria": "Saúde",
+    "lat": -7.1356746,
+    "lon": -34.8551993,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a0f141214f53-usfsr.jpg",
+    "descricao": "Ponto de atendimento de cultura",
+    "status": "Crítico",
+    "cor": "green",
+    "icone": "heart-pulse"
+  },
+
+  {
+    "id": 6,
+    "nome": "Grupo de Capoeira",
+    "distrito": "Distrito I",
+    "categoria": "Esporte e Lazer",
+    "lat": -7.1356681424822,
+    "lon": -34.857060313225,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d28905151a-whatsapp_image_2026-07-07_at_08.15.17_1.jpeg",
+    "descricao": "Ponto de atendimento de cultura",
+    "status": "Crítico",
+    "cor": "orange",
+    "icone": "person-running"
+  },
+
+  {
+    "id": 7,
+    "nome": "Escola Estadual São Rafael",
+    "distrito": "Distrito I",
+    "categoria": "Educação",
+    "lat": -7.1349874987785,
+    "lon": -34.854996353388,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d279c8241a-whatsapp_image_2026-07-07_at_08.30.50.jpeg",
+    "descricao": "Ponto de atendimento de cultura",
+    "status": "Crítico",
+    "cor": "purple",
+    "icone": "user-graduate"
+  },
+
+  {
+    "id": 8,
+    "nome": "Centro Espírita",
+    "distrito": "Distrito I",
+    "categoria": "Religião",
+    "lat": -7.1354566042807,
+    "lon": -34.85704690218,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d2a0442488-whatsapp_image_2026-07-07_at_08.15.56.jpeg",
+    "descricao": "Ponto de atendimento de cultura",
+    "status": "Crítico",
+    "cor": "lightblue",
+    "icone": "person-praying"
+  },
+
+  {
+    "id": 9,
+    "nome": "Igreja Batista",
+    "distrito": "Distrito I",
+    "categoria": "Religião",
+    "lat": -7.1355819179468,
+    "lon": -34.856373661995,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d25b00c1ec-whatsapp_image_2026-07-07_at_08.17.05.jpeg",
+    "descricao": "Ponto de atendimento de cultura",
+    "status": "Crítico",
+    "cor": "lightblue",
+    "icone": "person-praying"
+  },
+
+  {
+    "id": 10,
+    "nome": "Igreja Católica",
+    "distrito": "Distrito I",
+    "categoria": "Religião",
+    "lat": -7.1353891209475515,
+    "lon": -34.855373931718795,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4aa7c397e88-captura_de_tela_2026-07-05_155133.png",
+    "descricao": "Ponto de atendimento de cultura e oração",
+    "status": "Crítico",
+    "cor": "lightblue",
+    "icone": "person-praying"
+  },
+
+  {
+    "id": 11,
+    "nome": "Igreja Nazareno",
+    "distrito": "Distrito I",
+    "categoria": "Religião",
+    "lat": -7.1341360820901,
+    "lon": -34.854902476072,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d252ccf628-whatsapp_image_2026-07-07_at_08.34.35.jpeg",
+    "descricao": "Ponto de atendimento de religião e oração",
+    "status": "Crítico",
+    "cor": "lightblue",
+    "icone": "person-praying"
+  },
+
+  {
+    "id": 12,
+    "nome": "Terreiro de Ubanda Pai Leto",
+    "distrito": "Distrito I",
+    "categoria": "Religião",
+    "lat": -7.1336316627028,
+    "lon": -34.854914546013,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d25729606f-whatsapp_image_2026-07-07_at_08.42.13.jpeg",
+    "descricao": "Ponto de atendimento de fé e oração",
+    "status": "Crítico",
+    "cor": "blue",
+    "icone": "person-praying"
+  },
+
+  {
+    "id": 13,
+    "nome": "Amplificadora",
+    "distrito": "Distrito I",
+    "categoria": "Cultura",
+    "lat": -7.134232954946473,
+    "lon": -34.854965254212026,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d2993756e2-whatsapp_image_2026-07-07_at_08.33.39.jpeg",
+    "descricao": "Ponto de atendimento de fé e oração",
+    "status": "Crítico",
+    "cor": "beige",
+    "icone": "landmark"
+  },
+
+  {
+    "id": 14,
+    "nome": "Associação dos Moradores de São Rafael",
+    "distrito": "Distrito I",
+    "categoria": "Cultura",
+    "lat": -7.1344668756038,
+    "lon": -34.855037927628,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d27ea2b008-whatsapp_image_2026-07-07_at_08.32.38.jpeg",
+    "descricao": "Ponto de atendimento de fé e oração",
+    "status": "Crítico",
+    "cor": "beige",
+    "icone": "landmark"
+  },
+
+  {
+    "id": 15,
+    "nome": "Instituto Voz Popular IVP",
+    "distrito": "Distrito I",
+    "categoria": "Cultura",
+    "lat": -7.1352241006244,
+    "lon": -34.855851307511,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a199bf07053a-ivp.jpg",
+    "descricao": "Ponto de atendimento de fé e oração",
+    "status": "Crítico",
+    "cor": "beige",
+    "icone": "landmark"
+  },
+
+  {
+    "id": 16,
+    "nome": "ONG Mãos de Mães",
+    "distrito": "Distrito I",
+    "categoria": "Cultura",
+    "lat": -7.13479995778,
+    "lon": -34.855111688375,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4aad108c2c2-captura_de_tela_2026-07-05_161339.png",
+    "descricao": "Ponto de atendimento de fé e oração",
+    "status": "Crítico",
+    "cor": "beige",
+    "icone": "landmark"
+  },
+
+  {
+    "id": 17,
+    "nome": "Banco Comunitário",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.135134420828,
+    "lon": -34.855976700783,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a199a4b5d4be-banco.jpg",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  },
+
+  {
+    "id": 18,
+    "nome": "Comércio Dona Arlete",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.13517618999,
+    "lon": -34.855503290892,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d266d11060-whatsapp_image_2026-07-07_at_08.30.31.jpeg",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  },
+
+  {
+    "id": 19,
+    "nome": "Comércio Dona Deda",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.1352695950334,
+    "lon": -34.855255186558,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d26f1f0e14-whatsapp_image_2026-07-07_at_08.30.04.jpeg",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  },
+
+  {
+    "id": 20,
+    "nome": "Comércio Seu João",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.1354377328218,
+    "lon": -34.85556229949,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4aa6fd3c4a0-captura_de_tela_2026-07-05_154651.png",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  },
+
+  {
+    "id": 21,
+    "nome": "Comércio Seu Manoel",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.1332312119883,
+    "lon": -34.854710027575,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d261fe0818-whatsapp_image_2026-07-07_at_08.44.01.jpeg",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  },
+
+  {
+    "id": 22,
+    "nome": "Mercado Tonico",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.1345737005557,
+    "lon": -34.855232387781,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4aadb051884-captura_de_tela_2026-07-05_161628.png",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  },
+
+  {
+    "id": 23,
+    "nome": "Uge Lanches",
+    "distrito": "Distrito I",
+    "categoria": "Comércio",
+    "lat": -7.1335422154323,
+    "lon": -34.854887723923,
+    "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d25fa551d9-whatsapp_image_2026-07-07_at_08.35.59.jpeg",
+    "descricao": "Ponto de atendimento de comércio e serviços",
+    "status": "Crítico",
+    "cor": "red",
+    "icone": "cart-shopping"
+  }
+
+]
