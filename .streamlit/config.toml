@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#7A3F98"             # Roxo secundário para destaques/botões
+backgroundColor = "#F8F5E9"          # Fundo principal Creme/Off-White do AfirmaSUS
+secondaryBackgroundColor = "#EFE9D8" # Fundo do Menu Lateral
+textColor = "#31103C"                # Texto Roxo bem escuro (fácil leitura)
+font = "sans serif"
