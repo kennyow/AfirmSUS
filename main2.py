@@ -337,15 +337,15 @@ v_col1, v_col2, v_col3 = st.columns(3)
 with v_col1:
     st.markdown("### Vídeo 1")
     
-    st.video("https://www.youtube.com/watch?v=KWmfR6VExYs")
+    st.video("https://youtu.be/dOvOjLi99WE")
     
     st.markdown(
-        "**Título do vídeo:** Apresentação do AfirmaSUS (UEMA - Caxias, Maranhão)"
+        "**Título do vídeo:** São Rafael: Memória, Identidade e Território"
     )
     
     st.write(
-        "Vídeo de apresentação do projeto AfirmaSUS (UEMA - Caxias, Maranhão), "
-        "seus objetivos e sua proposta de mapeamento participativo."
+        "Vídeo de apresentação da comunidade São Rafael em João Pessoa, "
+        "a fim de mostrar a importância da preservação da memória e da identidade local."
     )
 
 
