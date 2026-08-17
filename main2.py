@@ -172,7 +172,7 @@ else:
 st.sidebar.markdown("### Filtrar por Categoria")
 
 # Botão para limpar o filtro
-if st.sidebar.button("✨ Exibir Todas as Categorias", use_container_width=True):
+if st.sidebar.button("✨ Exibir Todas as Categorias", width='stretch'):
     st.session_state["categoria_selecionada"] = "Todas"
 
 st.sidebar.markdown("---")
@@ -203,7 +203,7 @@ for idx, cat in enumerate(categorias_existentes):
         is_selected = (st.session_state["categoria_selecionada"] == cat)
         label_btn = f"✓ {cat}" if is_selected else cat
         
-        if st.button(label_btn, key=f"btn_cat_{cat}", use_container_width=True):
+        if st.button(label_btn, key=f"btn_cat_{cat}", width='stretch'):
             st.session_state["categoria_selecionada"] = cat
             st.rerun()
 
@@ -227,7 +227,6 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
 # 5. ÁREA PRINCIPAL (Mapa + Detalhes)
 # ---------------------------------------------------------
 st.title("Mapeamento Participativo do SUS - João Pessoa")
-
 # BARRA DE NAVEGAÇÃO SUPERIOR (#F2EAD5)
 st.markdown("""
     <div class="top-nav-bar">
@@ -235,8 +234,11 @@ st.markdown("""
         <a class="top-nav-btn" href="#videos">🎥 Vídeos</a>
         <a class="top-nav-btn" href="#linha-do-tempo">🕐 Linha do Tempo</a>
         <a class="top-nav-btn" href="#relatorios">📊 Relatórios</a>
+        <a class="top-nav-btn" href="#informacoes">ℹ️ Informações</a>
     </div>
 """, unsafe_allow_html=True)
+
+
 
 # Verifica se há dados para mostrar no mapa
 if df_filtrado.empty:
@@ -253,6 +255,7 @@ with col_mapa:
     mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="CartoDB voyager")
     
     for idx, row in df_filtrado.iterrows():
+        # Verifica se lat/lon são válidos
         if pd.isna(row["lat"]) or pd.isna(row["lon"]):
             continue
             
@@ -260,6 +263,7 @@ with col_mapa:
         if pd.isna(icone_nome):
             icone_nome = "hospital"
             
+        # Pega o nome do local (fallback se não existir)
         nome_local = row.get("nome", f"Local {idx}")
         if pd.isna(nome_local):
             nome_local = f"Local {idx}"
@@ -294,33 +298,31 @@ with col_detalhes:
         lat_clicada = map_data["last_object_clicked"]["lat"]
         lon_clicada = map_data["last_object_clicked"]["lng"]
         
+        # Verifica se há dados para comparar
         if not df_filtrado.empty:
-            # 1. Tentativa de Busca Exata por ID ou Nome (se o Folium retornar)
-            nome_clicado = map_data["last_object_clicked"].get("popup")
-            if nome_clicado:
-                match_nome = df_filtrado[df_filtrado["nome"] == nome_clicado]
-                if not match_nome.empty:
-                    ponto_encontrado = match_nome.iloc[0]
-
-            # 2. Fallback: Cálculo da Menor Distância (Garante precisão milimétrica ao clicar)
-            if ponto_encontrado is None:
-                distancias = ((df_filtrado["lat"] - lat_clicada) ** 2 + (df_filtrado["lon"] - lon_clicada) ** 2)
-                ponto_encontrado = df_filtrado.loc[distancias.idxmin()]
+            match = df_filtrado[
+                (df_filtrado["lat"].round(3) == round(lat_clicada, 3)) & 
+                (df_filtrado["lon"].round(3) == round(lon_clicada, 3))
+            ]
+            if not match.empty:
+                ponto_encontrado = match.iloc[0]
 
     if ponto_encontrado is not None:
-        if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
-            foto_url = converter_link_drive(ponto_encontrado["foto"])
-            st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
-            
+        if ponto_encontrado is not None:
+            if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
+                # Converte o link do Drive antes de passar para o st.image
+                foto_url = converter_link_drive(ponto_encontrado["foto"])
+                st.image(foto_url, width='stretch', caption=ponto_encontrado.get("nome", "Local"))
         st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
         st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
         st.markdown(f"**Distrito:** `{ponto_encontrado.get('distrito', 'Não especificado')}`")
         st.markdown(f"**Status de Infraestrutura:** `{ponto_encontrado.get('status', 'Não especificado')}`")
-        
         if "descricao" in ponto_encontrado and pd.notna(ponto_encontrado["descricao"]):
             st.info(ponto_encontrado["descricao"])
     else:
         st.warning("👈 Clique em qualquer marcador no mapa para abrir as fotos, diagnósticos e descrições do local.")
+
+
 
 # ---------------------------------------------------------
 # 6. VÍDEOS
@@ -491,3 +493,32 @@ if not df_filtrado.empty:
             st.info("Sem dados de status")
 else:
     st.info("Nenhum local encontrado para os filtros selecionados.")
+
+# ---------------------------------------------------------
+# 9. INFORMAÇÕES E LINKS DO PROJETO
+# ---------------------------------------------------------
+st.divider()
+st.markdown('<div id="informacoes"></div>', unsafe_allow_html=True) # Âncora de Informações
+st.subheader("ℹ️ Informações e Plataformas do Projeto")
+
+st.write(
+    "Acesse abaixo as plataformas e ferramentas utilizadas em outras etapas e "
+    "atividades do mapeamento participativo do projeto **AfirmaSUS-JP**:"
+)
+
+i_col1, i_col2, i_col3 = st.columns(3)
+
+with i_col1:
+    st.markdown("### 🗺️ Ushahidi")
+    st.write("Plataforma de mapeamento colaborativo e geolocalização de pontos de interesse do SUS.")
+    st.link_button("Acessar Ushahidi", "https://kennyow.ushahidi.io/map", use_container_width=True)
+
+with i_col2:
+    st.markdown("### 📍 Partimap")
+    st.write("Ferramenta de participação cidadã e cartografia comunitária interativa.")
+    st.link_button("Acessar Partimap", "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", use_container_width=True)
+
+with i_col3:
+    st.markdown("### ⏳ ChronoFlo Timeline")
+    st.write("Linha do tempo cronológica detalhada das ações e marcos do projeto AfirmaSUS.")
+    st.link_button("Acessar ChronoFlo", "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", use_container_width=True)
