@@ -6,6 +6,21 @@ import folium
 import pandas as pd
 import json
 import os
+import re
+import streamlit as st
+
+
+
+# Função auxiliar para tratar URLs do Google Drive
+def converter_link_drive(url):
+    if not url or not isinstance(url, str):
+        return url
+    padrao_drive = r'(?:file/d/|id=)([\w-]+)'
+    match = re.search(padrao_drive, url)
+    if match:
+        file_id = match.group(1)
+        return f"https://lh3.googleusercontent.com/d/{file_id}"
+    return url
 
 # Configuração da Página
 st.set_page_config(
@@ -15,11 +30,199 @@ st.set_page_config(
 )
 
 # Estilização CSS personalizada
-# Estilização CSS personalizada
+
 st.markdown("""
     <style>
+        /* Rolagem suave na página */
+        html {
+            scroll-behavior: smooth;
+        }
+
         h1, h2, h3 { color: #4C2059 !important; }
         hr { border-top: 2px solid #FF5364 !important; }
+
+        /* Estilo dos Círculos de Filtro na Sidebar */
+        .circle-filter-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            margin: 0 auto 4px auto;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* Animação e destaque do ícone selecionado */
+        .circle-filter-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* Ajuste dos botões transparentes do Streamlit por cima dos círculos */
+        [data-testid="stSidebar"] div.stButton > button {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            padding: 6px 2px;
+            background-color: #ffffff;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4C2059;
+        }
+        
+        [data-testid="stSidebar"] div.stButton > button:hover {
+            border-color: #FF5364;
+            color: #FF5364;
+        }
+
+        /* Estilo da Barra Superior de Navegação/Filtro */
+        .top-nav-bar {
+            background-color: #ED9026;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .top-nav-btn {
+            color: #4C2059 !important;
+            text-decoration: none !important;
+            font-weight: 600;
+            font-size: 21px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .top-nav-btn:hover {
+            background-color: rgba(76, 32, 89, 0.1);
+            color: #FF5364 !important;
+        }
+
+        /* Remove molduras/sombras das imagens na sidebar */
+        [data-testid="stSidebar"] img {
+            border: none !important;
+            outline: none !important;
+            box-shadow: none !important;
+            background-color: transparent !important;
+        }
+
+        /* Realce das opções da sidebar */
+        [data-testid="stSidebar"] div[role="radiogroup"] > label {
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            transition: background-color 0.2s ease;
+        }
+
+        [data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+            background-color: rgba(242, 234, 213, 0.5);
+        }
+
+       /* --- LINHA DO TEMPO HORIZONTAL COM SCROLL --- */
+        .timeline-horizontal-scroll {
+            display: flex;
+            flex-direction: row;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 30px 10px 20px 10px;
+            gap: 25px;
+            scroll-behavior: smooth;
+            white-space: nowrap;
+        }
+
+        /* Customização da Barra de Scroll */
+        .timeline-horizontal-scroll::-webkit-scrollbar {
+            height: 10px;
+        }
+        .timeline-horizontal-scroll::-webkit-scrollbar-track {
+            background: #F2EAD5;
+            border-radius: 5px;
+        }
+        .timeline-horizontal-scroll::-webkit-scrollbar-thumb {
+            background: #FF5364;
+            border-radius: 5px;
+        }
+
+        /* Card do Evento na Horizontal */
+        .timeline-card-h {
+            flex: 0 0 300px;
+            background-color: #F2EAD5;
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            white-space: normal;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: transform 0.2s;
+        }
+
+        .timeline-card-h:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Linha conetora superior no topo do card */
+        .timeline-card-h::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background-color: #FF5364;
+        }
+
+        /* Ponto circular na linha do tempo */
+        .timeline-card-h::after {
+            content: '';
+            position: absolute;
+            top: -21px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background-color: #4C2059;
+            border: 3px solid #FF5364;
+            border-radius: 50%;
+        }
+
+        .timeline-date-h {
+            font-weight: bold;
+            color: #FF5364;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .timeline-title-h {
+            font-weight: bold;
+            color: #4C2059;
+            font-size: 16px;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+
+        .timeline-desc-h {
+            color: #333333;
+            font-size: 13px;
+            margin-bottom: 12px;
+            flex-grow: 1;
+        }
+
+        .timeline-img-h {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -28,7 +231,7 @@ st.markdown("""
 # ---------------------------------------------------------
 caminho_logo = "logo3.jpg"
 if os.path.exists(caminho_logo):
-    st.sidebar.image(caminho_logo, width="stretch")
+    st.sidebar.image(caminho_logo, width="content", )
 
 st.sidebar.title("AfirmaSUS-JP")
 st.sidebar.caption("Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade para Discentes da Área da Saúde")
@@ -128,41 +331,76 @@ df_locais = df_locais.dropna(subset=['lat', 'lon'])
 
 
 # ---------------------------------------------------------
-# 4. FILTROS DA SIDEBAR (COM VALIDAÇÃO)
+# 4. FILTROS DA SIDEBAR (CÍRCULOS COLORIDOS COM ÍCONES)
 # ---------------------------------------------------------
-try:
-    # Verifica se a coluna 'distrito' existe antes de usar
-    if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
-        distritos_disponiveis = ["Todos"] + sorted(list(df_locais["distrito"].dropna().unique()))
-        distrito_selecionado = st.sidebar.selectbox("Filtrar por Distrito Sanitário", distritos_disponiveis)
-    else:
-        st.sidebar.warning("⚠️ Coluna 'distrito' não encontrada ou vazia")
-        distrito_selecionado = "Todos"
-        distritos_disponiveis = ["Todos"]
 
-    if 'categoria' in df_locais.columns and not df_locais['categoria'].isna().all():
-        categorias_disponiveis = ["Todas"] + sorted(
-            list(df_locais["categoria"].dropna().unique())
-        )
+# Inicializa o estado da categoria selecionada caso não exista
+if "categoria_selecionada" not in st.session_state:
+    st.session_state["categoria_selecionada"] = "Todas"
 
-        categoria_selecionada = st.sidebar.radio(
-            "Filtrar por Categoria",
-            categorias_disponiveis
-        )
+# Mapeamento completo extraído dos dados do JSON (Cor, Ícone FontAwesome e Emoji fallback)
+MAPA_CATEGORIAS = {
+    "Esporte e Lazer": {"cor": "#FF8C00", "fa": "fa-running", "emoji": "🏃"},      # orange
+    "Saúde":           {"cor": "#28A745", "fa": "fa-heart-pulse", "emoji": "🩺"},  # green
+    "Educação":        {"cor": "#6f42c1", "fa": "fa-user-graduate", "emoji": "🎓"},# purple
+    "Religião":        {"cor": "#17A2B8", "fa": "fa-hands-praying", "emoji": "🙏"},# lightblue
+    "Cultura":         {"cor": "#D1C7A5", "fa": "fa-landmark", "emoji": "🏛️"},     # beige
+    "Comércio":        {"cor": "#DC3545", "fa": "fa-cart-shopping", "emoji": "🛒"} # red
+}
 
-    else:
-        st.sidebar.warning("⚠️ Coluna 'categoria' não encontrada ou vazia")
-        categoria_selecionada = "Todas"
-        categorias_disponiveis = ["Todas"]
-
-except Exception as e:
-    st.sidebar.error(f"❌ Erro nos filtros: {e}")
+# 1. Filtro de Distrito Sanitário
+if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
+    distritos_disponiveis = ["Todos"] + sorted(list(df_locais["distrito"].dropna().unique()))
+    distrito_selecionado = st.sidebar.selectbox("Filtrar por Distrito Sanitário", distritos_disponiveis)
+else:
     distrito_selecionado = "Todos"
-    categoria_selecionada = "Todas"
-    distritos_disponiveis = ["Todos"]
-    categorias_disponiveis = ["Todas"]
 
-# Aplicando Filtros
+st.sidebar.markdown("### Filtrar por Categoria")
+
+# Botão para limpar o filtro
+if st.sidebar.button("✨ Exibir Todas as Categorias", use_container_width=True):
+    st.session_state["categoria_selecionada"] = "Todas"
+
+st.sidebar.markdown("---")
+
+# Renderização dos Ícones em Círculos Coloridos em Grade (2 Colunas)
+cols_cat = st.sidebar.columns(2)
+
+categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
+
+for idx, cat in enumerate(categorias_existentes):
+    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "emoji": "📌"})
+    col = cols_cat[idx % 2]
+    
+    with col:
+        # Círculo colorido com o ícone dentro
+        st.markdown(
+            f'''
+            <div style="text-align: center; margin-bottom: 5px;">
+                <div class="circle-filter-btn" style="background-color: {info['cor']};">
+                    <span>{info['emoji']}</span>
+                </div>
+            </div>
+            ''', 
+            unsafe_allow_html=True
+        )
+        
+        # Botão de ação do filtro
+        is_selected = (st.session_state["categoria_selecionada"] == cat)
+        label_btn = f"✓ {cat}" if is_selected else cat
+        
+        if st.button(label_btn, key=f"btn_cat_{cat}", use_container_width=True):
+            st.session_state["categoria_selecionada"] = cat
+            st.rerun()
+
+# Categoria ativa atual
+categoria_selecionada = st.session_state["categoria_selecionada"]
+
+# Indicador visual de qual categoria está ativa
+if categoria_selecionada != "Todas":
+    st.sidebar.info(f"Filtro ativo: **{categoria_selecionada}**")
+
+# Aplicando os Filtros no DataFrame
 df_filtrado = df_locais.copy()
 
 if distrito_selecionado != "Todos" and 'distrito' in df_filtrado.columns:
@@ -175,6 +413,17 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
 # 5. ÁREA PRINCIPAL (Mapa + Detalhes)
 # ---------------------------------------------------------
 st.title("Mapeamento Participativo do SUS - João Pessoa")
+# BARRA DE NAVEGAÇÃO SUPERIOR (#F2EAD5)
+st.markdown("""
+    <div class="top-nav-bar">
+        <a class="top-nav-btn" href="#territorio">📍 Território</a>
+        <a class="top-nav-btn" href="#videos">🎥 Vídeos</a>
+        <a class="top-nav-btn" href="#linha-do-tempo">🕐 Linha do Tempo</a>
+        <a class="top-nav-btn" href="#relatorios">📊 Relatórios</a>
+    </div>
+""", unsafe_allow_html=True)
+
+
 
 # Verifica se há dados para mostrar no mapa
 if df_filtrado.empty:
@@ -244,8 +493,11 @@ with col_detalhes:
                 ponto_encontrado = match.iloc[0]
 
     if ponto_encontrado is not None:
-        if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
-            st.image(ponto_encontrado["foto"], use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
+        if ponto_encontrado is not None:
+            if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
+                # Converte o link do Drive antes de passar para o st.image
+                foto_url = converter_link_drive(ponto_encontrado["foto"])
+                st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
         st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
         st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
         st.markdown(f"**Distrito:** `{ponto_encontrado.get('distrito', 'Não especificado')}`")
@@ -263,6 +515,7 @@ with col_detalhes:
 
 st.divider()
 st.subheader("🎥 Vídeos")
+st.markdown('<div id="videos"></div>', unsafe_allow_html=True) # Âncora de Vídeos
 
 v_col1, v_col2, v_col3 = st.columns(3)
 
@@ -312,23 +565,100 @@ with v_col3:
 
 
 # ---------------------------------------------------------
-# 7. LINHA DO TEMPO
+# 7. LINHA DO TEMPO HORIZONTAL (VIA JSON COM DRIVE SLIDESHOW)
 # ---------------------------------------------------------
-
 st.divider()
-st.subheader("🕐 Linha do Tempo AfirmaSUS")
+st.markdown('<div id="linha-do-tempo"></div>', unsafe_allow_html=True)
+st.subheader("🕐 Linha do Tempo - Programa AfirmaSUS")
 
-st.iframe(
-    "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/",
-    height=800
-)
+# CSS para animação do carrossel/slideshow automático dentro do card
+st.markdown("""
+<style>
+.timeline-slider {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+.timeline-slider img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: fadeSlider 12s infinite;
+}
+@keyframes fadeSlider {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    40% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 0; }
+}
+</style>
+""", unsafe_allow_html=True)
 
+# Carrega os dados do arquivo JSON externo
+try:
+    with open("timeline.json", "r", encoding="utf-8") as f:
+        eventos_timeline = json.load(f)
+except Exception as e:
+    st.error(f"Erro ao carregar timeline.json: {e}")
+    eventos_timeline = []
+
+# Construção do HTML em linha única
+cards_html = []
+for ev in eventos_timeline:
+    # Trata lista de fotos ou fallback para foto única
+    lista_fotos_raw = ev.get("fotos", [])
+    if not lista_fotos_raw and ev.get("foto"):
+        lista_fotos_raw = [ev["foto"]]
+    
+    # Converte links do Drive
+    fotos_convertidas = [converter_link_drive(url) for url in lista_fotos_raw]
+    
+    # Gera a tag da imagem/carrossel
+    if len(fotos_convertidas) > 1:
+        # Se tem mais de uma foto, gera o container slider
+        total_fotos = len(fotos_convertidas)
+        imgs_html = []
+        for idx, img_url in enumerate(fotos_convertidas):
+            delay = idx * (12 / total_fotos)
+            imgs_html.append(f'<img src="{img_url}" class="timeline-img-h" style="animation-delay: {delay}s;">')
+        tag_foto = f'<div class="timeline-slider">{"".join(imgs_html)}</div>'
+    elif len(fotos_convertidas) == 1:
+        # Se tem apenas uma foto
+        tag_foto = f'<img src="{fotos_convertidas[0]}" class="timeline-img-h">'
+    else:
+        tag_foto = ''
+
+    # HTML do Card
+    card = (
+        f'<div class="timeline-card-h" style="border-top: 5px solid {ev.get("cor_borda", "#28A745")};">'
+        f'<div>'
+        f'<div class="timeline-date-h">📅 {ev["data"]}</div>'
+        f'<div class="timeline-title-h">{ev["titulo"]}</div>'
+        f'<div class="timeline-desc-h">{ev["descricao"]}</div>'
+        f'</div>'
+        f'{tag_foto}'
+        f'</div>'
+    )
+    cards_html.append(card)
+
+# Junta todos os cards dentro do container flex com scroll horizontal
+html_timeline = f'<div class="timeline-horizontal-scroll">{"".join(cards_html)}</div>'
+
+st.markdown(html_timeline, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 8. QUADRO DE GRÁFICOS (Estatísticas Inferiores)
 # ---------------------------------------------------------
 st.divider()
 st.subheader("📊 Resumo de Indicadores")
+st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True) # Âncora de Relatórios/Indicadores
 
 if not df_filtrado.empty:
     g_col1, g_col2 = st.columns(2)

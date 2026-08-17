@@ -1,0 +1,219 @@
+/* style.css */
+html {
+    scroll-behavior: smooth;
+}
+
+h1, h2, h3 { 
+    color: #4C2059 !important; 
+}
+
+hr { 
+    border-top: 2px solid #FF5364 !important; 
+}
+
+/* Estilo dos Círculos de Filtro na Sidebar */
+.circle-filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    margin: 0 auto 4px auto;
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.circle-filter-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
+}
+
+/* Ajuste dos botões transparentes do Streamlit */
+[data-testid="stSidebar"] div.stButton > button {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding: 6px 2px;
+    background-color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4C2059;
+}
+
+[data-testid="stSidebar"] div.stButton > button:hover {
+    border-color: #FF5364;
+    color: #FF5364;
+}
+
+/* Barra Superior de Navegação */
+.top-nav-bar {
+    background-color: #ED9026;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.top-nav-btn {
+    color: #4C2059 !important;
+    text-decoration: none !important;
+    font-weight: 600;
+    font-size: 21px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.2s ease-in-out;
+}
+
+.top-nav-btn:hover {
+    background-color: rgba(76, 32, 89, 0.1);
+    color: #FF5364 !important;
+}
+
+/* Sidebar Ajustes */
+[data-testid="stSidebar"] img {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] > label {
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    transition: background-color 0.2s ease;
+}
+
+[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+    background-color: rgba(242, 234, 213, 0.5);
+}
+
+/* Linha do Tempo Horizontal */
+.timeline-horizontal-scroll {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 30px 10px 20px 10px;
+    gap: 25px;
+    scroll-behavior: smooth;
+    white-space: nowrap;
+}
+
+.timeline-horizontal-scroll::-webkit-scrollbar {
+    height: 10px;
+}
+
+.timeline-horizontal-scroll::-webkit-scrollbar-track {
+    background: #F2EAD5;
+    border-radius: 5px;
+}
+
+.timeline-horizontal-scroll::-webkit-scrollbar-thumb {
+    background: #FF5364;
+    border-radius: 5px;
+}
+
+.timeline-card-h {
+    flex: 0 0 300px;
+    background-color: #F2EAD5;
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    white-space: normal;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s;
+}
+
+.timeline-card-h:hover {
+    transform: translateY(-5px);
+}
+
+.timeline-card-h::before {
+    content: '';
+    position: absolute;
+    top: -15px;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background-color: #FF5364;
+}
+
+.timeline-card-h::after {
+    content: '';
+    position: absolute;
+    top: -21px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    background-color: #4C2059;
+    border: 3px solid #FF5364;
+    border-radius: 50%;
+}
+
+.timeline-date-h {
+    font-weight: bold;
+    color: #FF5364;
+    font-size: 13px;
+    margin-bottom: 6px;
+}
+
+.timeline-title-h {
+    font-weight: bold;
+    color: #4C2059;
+    font-size: 16px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.timeline-desc-h {
+    color: #333333;
+    font-size: 13px;
+    margin-bottom: 12px;
+    flex-grow: 1;
+}
+
+.timeline-img-h {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Slider da Timeline */
+.timeline-slider {
+    position: relative;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.timeline-slider img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    animation: fadeSlider 12s infinite;
+}
+
+@keyframes fadeSlider {
+    0% { opacity: 0; }
+    10% { opacity: 1; }
+    40% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 0; }
+}
