@@ -227,6 +227,7 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
 # 5. ÁREA PRINCIPAL (Mapa + Detalhes)
 # ---------------------------------------------------------
 st.title("Mapeamento Participativo do SUS - João Pessoa")
+
 # BARRA DE NAVEGAÇÃO SUPERIOR (#F2EAD5)
 st.markdown("""
     <div class="top-nav-bar">
@@ -236,8 +237,6 @@ st.markdown("""
         <a class="top-nav-btn" href="#relatorios">📊 Relatórios</a>
     </div>
 """, unsafe_allow_html=True)
-
-
 
 # Verifica se há dados para mostrar no mapa
 if df_filtrado.empty:
@@ -254,7 +253,6 @@ with col_mapa:
     mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="CartoDB voyager")
     
     for idx, row in df_filtrado.iterrows():
-        # Verifica se lat/lon são válidos
         if pd.isna(row["lat"]) or pd.isna(row["lon"]):
             continue
             
@@ -262,7 +260,6 @@ with col_mapa:
         if pd.isna(icone_nome):
             icone_nome = "hospital"
             
-        # Pega o nome do local (fallback se não existir)
         nome_local = row.get("nome", f"Local {idx}")
         if pd.isna(nome_local):
             nome_local = f"Local {idx}"
@@ -297,31 +294,33 @@ with col_detalhes:
         lat_clicada = map_data["last_object_clicked"]["lat"]
         lon_clicada = map_data["last_object_clicked"]["lng"]
         
-        # Verifica se há dados para comparar
         if not df_filtrado.empty:
-            match = df_filtrado[
-                (df_filtrado["lat"].round(3) == round(lat_clicada, 3)) & 
-                (df_filtrado["lon"].round(3) == round(lon_clicada, 3))
-            ]
-            if not match.empty:
-                ponto_encontrado = match.iloc[0]
+            # 1. Tentativa de Busca Exata por ID ou Nome (se o Folium retornar)
+            nome_clicado = map_data["last_object_clicked"].get("popup")
+            if nome_clicado:
+                match_nome = df_filtrado[df_filtrado["nome"] == nome_clicado]
+                if not match_nome.empty:
+                    ponto_encontrado = match_nome.iloc[0]
+
+            # 2. Fallback: Cálculo da Menor Distância (Garante precisão milimétrica ao clicar)
+            if ponto_encontrado is None:
+                distancias = ((df_filtrado["lat"] - lat_clicada) ** 2 + (df_filtrado["lon"] - lon_clicada) ** 2)
+                ponto_encontrado = df_filtrado.loc[distancias.idxmin()]
 
     if ponto_encontrado is not None:
-        if ponto_encontrado is not None:
-            if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
-                # Converte o link do Drive antes de passar para o st.image
-                foto_url = converter_link_drive(ponto_encontrado["foto"])
-                st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
+        if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
+            foto_url = converter_link_drive(ponto_encontrado["foto"])
+            st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
+            
         st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
         st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
         st.markdown(f"**Distrito:** `{ponto_encontrado.get('distrito', 'Não especificado')}`")
         st.markdown(f"**Status de Infraestrutura:** `{ponto_encontrado.get('status', 'Não especificado')}`")
+        
         if "descricao" in ponto_encontrado and pd.notna(ponto_encontrado["descricao"]):
             st.info(ponto_encontrado["descricao"])
     else:
         st.warning("👈 Clique em qualquer marcador no mapa para abrir as fotos, diagnósticos e descrições do local.")
-
-
 
 # ---------------------------------------------------------
 # 6. VÍDEOS

@@ -227,13 +227,13 @@
 
   {
     "id": 18,
-    "nome": "Comércio Dona Arlete",
+    "nome": "Hortifruti Dona Arlete",
     "distrito": "Distrito I",
     "categoria": "Comércio",
     "lat": -7.13517618999,
     "lon": -34.855503290892,
     "foto": "https://74ddb495e3f187ded630-0b4c691ea14dad11384ab079da46af4f.ssl.cf2.rackcdn.com/kennyow.api.ushahidi.io/6/a/6a4d266d11060-whatsapp_image_2026-07-07_at_08.30.31.jpeg",
-    "descricao": "Ponto de atendimento de comércio e serviços",
+    "descricao": "**Função:** Comércio familiar de produtos hortifrutigranjeiros.\n\n**Descrição:** Barraca familiar que retornou ao ramo há cerca de um ano e meio.\n\n**Horário de Funcionamento:** Geralmente das 07h/08:30 às 12h e das 14h às 19h/19:30.\n\n**Serviços:** Comercialização de frutas, verduras, cereais e bebidas.",
     "status": "Crítico",
     "cor": "red",
     "icone": "cart-shopping"
