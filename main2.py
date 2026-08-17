@@ -511,14 +511,14 @@ i_col1, i_col2, i_col3 = st.columns(3)
 with i_col1:
     st.markdown("### 🗺️ Ushahidi")
     st.write("Plataforma de mapeamento colaborativo e geolocalização de pontos de interesse do SUS.")
-    st.link_button("Acessar Ushahidi", "https://kennyow.ushahidi.io/map", use_container_width=True)
+    st.link_button("Acessar Ushahidi", "https://kennyow.ushahidi.io/map", width='stretch')
 
 with i_col2:
     st.markdown("### 📍 Partimap")
     st.write("Ferramenta de participação cidadã e cartografia comunitária interativa.")
-    st.link_button("Acessar Partimap", "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", use_container_width=True)
+    st.link_button("Acessar Partimap", "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", width='stretch')
 
 with i_col3:
     st.markdown("### ⏳ ChronoFlo Timeline")
     st.write("Linha do tempo cronológica detalhada das ações e marcos do projeto AfirmaSUS.")
-    st.link_button("Acessar ChronoFlo", "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", use_container_width=True)
+    st.link_button("Acessar ChronoFlo", "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", width='stretch')
