@@ -506,7 +506,7 @@ st.write(
     "atividades do mapeamento participativo do projeto **AfirmaSUS-JP**:"
 )
 
-i_col1, i_col2, i_col3 = st.columns(3)
+i_col1, i_col2, i_col3, i_col4 = st.columns(4)
 
 with i_col1:
     st.markdown("### 🗺️ Ushahidi")
@@ -522,3 +522,8 @@ with i_col3:
     st.markdown("### ⏳ ChronoFlo Timeline")
     st.write("Linha do tempo cronológica detalhada das ações e marcos do projeto AfirmaSUS.")
     st.link_button("Acessar ChronoFlo", "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", width='stretch')
+
+with i_col4:
+    st.markdown("### 📊 Instagram")
+    st.write("Instagram oficial do projeto AfirmaSUS-JP, com atualizações e conteúdos visuais.")
+    st.link_button("Acessar Instagram", "https://www.instagram.com/afirmasusjp/", width='stretch')
