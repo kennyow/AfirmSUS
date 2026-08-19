@@ -1,11 +1,12 @@
 /* style.css - Janelas Flutuantes com st.container */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 
 html, body, [data-testid="stAppViewContainer"] {
     scroll-behavior: smooth;
     font-family: 'Inter', sans-serif;
-    background-color: #F8F7F4 !important;
+    background-color: #F8F7F4!important; /*#F8F7F4 */
 }
 
 /* Oculta o header nativo transparente do Streamlit */
@@ -43,14 +44,14 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .header-logo {
-    height: 38px !important;
+    height: 50px !important;
     width: auto !important;
     object-fit: contain !important;
 }
 
 .header-title {
     color: #FFFFFF !important;
-    font-size: 22px !important;
+    font-size: 25px !important;
     font-weight: 700 !important;
     margin: 0 !important;
     line-height: 1.2 !important;
@@ -83,15 +84,11 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .header-nav-btn:hover {
-    color: #FFFFFF !important;
+    color: rgba(203, 120, 18, 0.795) !important;
     background-color: rgba(255, 255, 255, 0.15);
 }
 
-.header-nav-btn.active {
-    color: #FFFFFF !important;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-bottom: 3px solid #00D2FF;
-}
+
 
 /* 2. ESTILIZAÇÃO DAS JANELAS FLUTUANTES (CARD BRANCO TRANSLÚCIDO) */
 [data-testid="stVerticalBlock"] > div:has(> div > div.element-container ) {

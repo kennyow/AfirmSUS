@@ -7,6 +7,7 @@ import pandas as pd
 import json
 import os
 import re
+import textwrap
 
 # Função auxiliar para tratar URLs do Google Drive
 def converter_link_drive(url):
@@ -18,6 +19,8 @@ def converter_link_drive(url):
         file_id = match.group(1)
         return f"https://lh3.googleusercontent.com/d/{file_id}"
     return url
+
+
 
 # Configuração da Página
 st.set_page_config(
@@ -38,12 +41,20 @@ carregar_css("style.css")
 # BARRA SUPERIOR ROXA (COM LOGO)
 # ---------------------------------------------------------
 # Altere o caminho da logo abaixo para o arquivo/link correto da sua imagem
-caminho_logo = "logo5.png"  
+# Cole o link de compartilhamento do seu arquivo no Google Drive aqui
+link_drive_logo = "https://drive.google.com/file/d/1YAMa6Ume30aX75c-p0w9BV15bWlKZkeY/view?usp=drive_link"
 
-st.markdown(f"""
+# Converter o link do Drive para URL direta de imagem
+logo_url = converter_link_drive(link_drive_logo)
+
+# Criar a tag HTML da logo
+tag_logo_html = f'<img src="{logo_url}" class="header-logo" alt="Logo AfirmaSUS">' if logo_url else ''
+
+# HTML limpo com textwrap.dedent para evitar que o Streamlit mostre o código na tela
+header_html = textwrap.dedent(f"""
     <div class="header-top-bar" id="territorio">
         <div class="header-brand">
-            <img src="{caminho_logo}" class="header-logo" alt="Logo AfirmaSUS" />
+            {tag_logo_html}
             <h1 class="header-title">AfirmaSUS–JP</h1>
             <span class="header-subtitle">Mapeamento Participativo do SUS</span>
         </div>
@@ -55,12 +66,49 @@ st.markdown(f"""
             <a class="header-nav-btn" href="#informacoes">Informações</a>
         </div>
     </div>
-""", unsafe_allow_html=True)
+""")
+
+st.markdown(header_html, unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 1. BARRA LATERAL (Filtros de Pesquisa)
 # ---------------------------------------------------------
+
+# Cole aqui o link de compartilhamento da logo no Google Drive
+link_drive_logo_sidebar = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
+
+# Conversão para URL direta
+logo_sidebar_url = converter_link_drive(link_drive_logo_sidebar)
+
+# Exibição da logo no topo da Sidebar
+if logo_sidebar_url:
+    st.sidebar.markdown(
+        f'''
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{logo_sidebar_url}" style="max-width: 80%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
+        </div>
+        ''',
+        unsafe_allow_html=True
+    )
+
+# Parágrafo explicativo entre linhas laranjas discretas
+st.sidebar.markdown(
+    """
+    <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0; opacity: 0.6;" />
+    
+    <div style="text-align: justify; font-size: 13px; color: #555555; line-height: 1.4;">
+        O <b>AfirmaSUS</b> é o Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade para Discentes na Área da Saúde. Criado pelo Ministério da Saúde, ele financia projetos em universidades públicas para apoiar estudantes de grupos vulnerabilizados e cotistas, promovendo uma cultura antirracista e inclusiva no Sistema Único de Saúde.
+    </div>
+    
+    <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0 20px 0; opacity: 0.6;" />
+    """,
+    unsafe_allow_html=True
+)
+
+
+
 st.sidebar.markdown("### Filtros de Pesquisa")
+
 
 caminho_json = "dados_locais.json"
 if not os.path.exists(caminho_json):
@@ -102,12 +150,13 @@ if "categoria_selecionada" not in st.session_state:
     st.session_state["categoria_selecionada"] = "Todas"
 
 MAPA_CATEGORIAS = {
-    "Esporte e Lazer": {"cor": "#FF8C00", "emoji": "🏃"},
-    "Saúde":           {"cor": "#28A745", "emoji": "🩺"},
-    "Educação":        {"cor": "#6f42c1", "emoji": "🎓"},
-    "Religião":        {"cor": "#17A2B8", "emoji": "🙏"},
-    "Cultura":         {"cor": "#D1C7A5", "emoji": "🏛️"},
-    "Comércio":        {"cor": "#DC3545", "emoji": "🛒"}
+    "Esporte e Lazer": {"cor": "#FF8C00", "icone": "person-running"},
+    "Saúde":           {"cor": "#28A745", "icone": "user-md"},
+    "Educação":        {"cor": "#856eaf", "icone": "user-graduate"},
+    "Religião":        {"cor": "#7BDCEB", "icone": "place-of-worship"},
+    "Cultura":         {"cor": "#D1C7A5", "icone": "landmark"},
+    "Comércio":        {"cor": "#DC3545", "icone": "shopping-cart"},
+    "Administrativo":  {"cor": "#CF68E3", "icone": "briefcase"}
 }
 
 if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
@@ -124,7 +173,7 @@ cols_cat = st.sidebar.columns(2)
 categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
 
 for idx, cat in enumerate(categorias_existentes):
-    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "emoji": "📌"})
+    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "map-marker"})
     col = cols_cat[idx % 2]
     
     with col:
@@ -132,7 +181,7 @@ for idx, cat in enumerate(categorias_existentes):
             f'''
             <div style="text-align: center;">
                 <div class="circle-filter-btn" style="background-color: {info['cor']};">
-                    <span>{info['emoji']}</span>
+                    <i class="fa fa-{info['icone']}" style="color: white; font-size: 18px;"></i>
                 </div>
             </div>
             ''', 
@@ -160,7 +209,7 @@ with st.container():
     col_mapa, col_detalhes = st.columns([2.3, 1])
 
     with col_mapa:
-        st.subheader("Mapa Interativo — João Pessoa")
+        st.subheader("Territorialização - Mapa Interativo — João Pessoa")
         
         mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=15, tiles="CartoDB voyager")
         
