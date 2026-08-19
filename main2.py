@@ -8,6 +8,7 @@ import json
 import os
 import re
 import textwrap
+import base64
 
 # Função auxiliar para tratar URLs do Google Drive
 def converter_link_drive(url):
@@ -209,7 +210,7 @@ with st.container():
     col_mapa, col_detalhes = st.columns([2.3, 1])
 
     with col_mapa:
-        st.subheader("Territorialização - Mapa Interativo — João Pessoa")
+        st.subheader("📍 Territorialização - Mapa Interativo — João Pessoa")
         
         mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=15, tiles="CartoDB voyager")
         
@@ -362,17 +363,37 @@ with st.container():
     links_info = [
         {"nome": "Ushahidi", "desc": "Mapeamento colaborativo.", "url": "https://kennyow.ushahidi.io/map", "logo": "./static/logo_ushahidi.png"},
         {"nome": "Partimap", "desc": "Cartografia comunitária.", "url": "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", "logo": "./static/logo_partimap.png"},
-        {"nome": "ChronoFlo", "desc": "Linha do tempo interativa.", "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", "logo": "./static/logo_chronoflotimeline.jpg"},
+        {"nome": "ChronoFlo", "desc": "Linha do tempo interativa.", "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", "logo": "https://drive.google.com/file/d/1xYy64kObKCJPmg8XP6lnE1oARwZRVNpy/view?usp=drive_link"},
         {"nome": "Instagram", "desc": "Perfil oficial do projeto.", "url": "https://www.instagram.com/afirmasusjp/", "logo": "./static/logo_insta.png"}
     ]
 
     cols_info = st.columns(4)
     for idx, item in enumerate(links_info):
         with cols_info[idx]:
+            logo_path = item["logo"]
+            
+            # Trata links do Google Drive
+            if "drive.google.com" in logo_path:
+                img_src = converter_link_drive(logo_path)
+            # Trata arquivos locais convertendo para base64 se a função existir
+            elif logo_path.startswith("./"):
+                if 'carregar_imagem_base64' in globals():
+                    img_src = carregar_imagem_base64(logo_path)
+                else:
+                    # Fallback simples caso a função não tenha sido declarada no topo
+                    if os.path.exists(logo_path):
+                        with open(logo_path, "rb") as f:
+                            dados = f.read()
+                        img_src = f"data:image/png;base64,{base64.b64encode(dados).decode()}"
+                    else:
+                        img_src = ""
+            else:
+                img_src = logo_path
+
             st.markdown(f'''
                 <div style="text-align: center;">
                     <a href="{item['url']}" target="_blank">
-                        <img src="{item['logo']}" style="height: 80px; object-fit: contain;" />
+                        <img src="{img_src}" style="height: 80px; object-fit: contain;" />
                     </a>
                     <h4 style="margin-top: 8px;">{item['nome']}</h4>
                 </div>
