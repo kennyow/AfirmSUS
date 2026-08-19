@@ -205,23 +205,37 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
 # ---------------------------------------------------------
 # 2. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
 # ---------------------------------------------------------
+st.markdown('<div id="territorio"></div>', unsafe_allow_html=True)
+
+# Verifica se há dados para mostrar no mapa
+if df_filtrado.empty:
+    st.warning("⚠️ Nenhum dado disponível para exibir no mapa.")
+    st.info("Verifique se o arquivo JSON tem dados válidos com coordenadas (lat/lon).")
+    st.stop()
+
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
-    col_mapa, col_detalhes = st.columns([2.3, 1])
+    col_mapa, col_detalhes = st.columns([2.2, 1])
 
     with col_mapa:
-        st.subheader("📍 Territorialização - Mapa Interativo — João Pessoa")
+        st.subheader("📍 Territorialização")
+        st.info(f"Mostrando {len(df_filtrado)} local(is)")
         
-        mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=15, tiles="CartoDB voyager")
+        mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="CartoDB voyager")
         
         for idx, row in df_filtrado.iterrows():
             if pd.isna(row["lat"]) or pd.isna(row["lon"]):
                 continue
+            
             icone_nome = row.get("icone", "hospital")
             if pd.isna(icone_nome): icone_nome = "hospital"
+            
             nome_local = row.get("nome", f"Local {idx}")
             if pd.isna(nome_local): nome_local = f"Local {idx}"
+            
             categoria_local = row.get("categoria", "Não especificada")
+            if pd.isna(categoria_local): categoria_local = "Não especificada"
+            
             cor_local = row.get("cor", "purple")
             if pd.isna(cor_local): cor_local = "purple"
                 
@@ -232,10 +246,10 @@ with st.container():
                 icon=folium.Icon(color=cor_local, icon=icone_nome, prefix="fa")
             ).add_to(mapa_jp)
         
-        map_data = st_folium(mapa_jp, width="100%", height=520, key="mapa_folium")
+        map_data = st_folium(mapa_jp, width="100%", height=480, key="mapa_folium")
 
     with col_detalhes:
-        st.subheader("Detalhes do Local")
+        st.subheader("🖼️ Detalhes do Local")
         ponto_encontrado = None
         
         if map_data and map_data.get("last_object_clicked"):
@@ -243,25 +257,32 @@ with st.container():
             lon_clicada = map_data["last_object_clicked"]["lng"]
             
             if not df_filtrado.empty:
-                match = df_filtrado[
-                    (df_filtrado["lat"].round(3) == round(lat_clicada, 3)) & 
-                    (df_filtrado["lon"].round(3) == round(lon_clicada, 3))
-                ]
-                if not match.empty:
-                    ponto_encontrado = match.iloc[0]
+                # Calcula a menor distância ao invés de usar arredondamento fixo
+                df_temp = df_filtrado.copy()
+                df_temp["distancia"] = (
+                    (df_temp["lat"] - lat_clicada) ** 2 + 
+                    (df_temp["lon"] - lon_clicada) ** 2
+                )
+                ponto_mais_proximo = df_temp.sort_values("distancia").iloc[0]
+                
+                # Tolerância de segurança de ~50 metros
+                if ponto_mais_proximo["distancia"] < 0.0005:
+                    ponto_encontrado = ponto_mais_proximo
 
         if ponto_encontrado is not None:
             if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
                 foto_url = converter_link_drive(ponto_encontrado["foto"])
                 st.image(foto_url, width='stretch', caption=ponto_encontrado.get("nome", "Local"))
+            
             st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
             st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
             st.markdown(f"**Distrito:** `{ponto_encontrado.get('distrito', 'Não especificado')}`")
-            st.markdown(f"**Status:** `{ponto_encontrado.get('status', 'Não especificado')}`")
+            st.markdown(f"**Status de Infraestrutura:** `{ponto_encontrado.get('status', 'Não especificado')}`")
+            
             if "descricao" in ponto_encontrado and pd.notna(ponto_encontrado["descricao"]):
                 st.info(ponto_encontrado["descricao"])
         else:
-            st.info("👈 Clique em um marcador no mapa para ver fotos e informações detalhadas.")
+            st.warning("👈 Clique em qualquer marcador no mapa para abrir as fotos, diagnósticos e descrições do local.")
 
 # LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
