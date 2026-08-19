@@ -505,24 +505,53 @@ st.write(
     "atividades do mapeamento participativo do projeto **AfirmaSUS-JP**:"
 )
 
-i_col1, i_col2, i_col3, i_col4 = st.columns(4)
+# Mapeamento dos dados com caminhos/URLs de imagem padrão
+# Lista com apenas os caminhos/URLs no campo "logo"
+links_info = [
+    {
+        "nome": "Ushahidi",
+        "descricao": "Plataforma de mapeamento colaborativo e geolocalização de pontos de interesse do SUS.",
+        "url": "https://kennyow.ushahidi.io/map",
+        "logo": "./static/logo_ushahidi.png"
+    },
+    {
+        "nome": "Partimap",
+        "descricao": "Ferramenta de participação cidadã e cartografia comunitária interativa.",
+        "url": "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1",
+        "logo": "./static/logo_partimap.png"
+    },
+    {
+        "nome": "ChronoFlo Timeline",
+        "descricao": "Linha do tempo cronológica detalhada das ações e marcos do projeto AfirmaSUS.",
+        "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/",
+        "logo": "./static/logo_chronoflotimeline.jpg"
+    },
+    {
+        "nome": "Instagram",
+        "descricao": "Instagram oficial do projeto AfirmaSUS-JP, com atualizações e conteúdos visuais.",
+        "url": "https://www.instagram.com/afirmasusjp/",
+        "logo": "./static/logo_insta.png"
+    }
+]
 
-with i_col1:
-    st.markdown("### 🗺️ Ushahidi")
-    st.write("Plataforma de mapeamento colaborativo e geolocalização de pontos de interesse do SUS.")
-    st.link_button("Acessar Ushahidi", "https://kennyow.ushahidi.io/map", width='stretch')
+cols_info = st.columns(4)
 
-with i_col2:
-    st.markdown("### 📍 Partimap")
-    st.write("Ferramenta de participação cidadã e cartografia comunitária interativa.")
-    st.link_button("Acessar Partimap", "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", width='stretch')
-
-with i_col3:
-    st.markdown("### ⏳ ChronoFlo Timeline")
-    st.write("Linha do tempo cronológica detalhada das ações e marcos do projeto AfirmaSUS.")
-    st.link_button("Acessar ChronoFlo", "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", width='stretch')
-
-with i_col4:
-    st.markdown("### 📊 Instagram")
-    st.write("Instagram oficial do projeto AfirmaSUS-JP, com atualizações e conteúdos visuais.")
-    st.link_button("Acessar Instagram", "https://www.instagram.com/afirmasusjp/", width='stretch')
+for idx, item in enumerate(links_info):
+    with cols_info[idx]:
+        # Renderização do Logo clicável
+        st.markdown(
+            f'''
+            <div style="text-align: center;">
+                <a href="{item['url']}" target="_blank">
+                    <img src="{item['logo']}" 
+                         alt="{item['nome']}" 
+                         style="height: 100px; width: 100px; object-fit: contain; border-radius: 8px; transition: transform 0.2s;"
+                         onmouseover="this.style.transform='scale(1.05)'"
+                         onmouseout="this.style.transform='scale(1)'" />
+                </a>
+                <h4 style="margin-top: 10px; margin-bottom: 5px;">{item['nome']}</h4>
+            </div>
+            ''',
+            unsafe_allow_html=True
+        )
+        st.write(item["descricao"])

@@ -17,6 +17,23 @@
     ]
   },
   {
+    "data": "Maio / 2026",
+    "titulo": "Visitas Familiares",
+    "categoria": "Saúde",
+    "cor_borda": "#D1C7A5",
+    "descricao": "Visita a famílias da comunidade São Rafael para identificar necessidades de saúde, oferecer apoio e fortalecer vínculos comunitários.",
+    "fotos": [
+      "https://drive.google.com/file/d/1dhLmnhJVGg2ojg7ta8f9t_IVJ48XTNBm/view?usp=drive_link",
+      "https://drive.google.com/file/d/10whlFEAJWLT05plegRCSoQR4fK4qirdK/view?usp=drive_link",
+      "https://drive.google.com/file/d/13p-eCCc7Hxg71bqg6PQqZ7RPOIWJsVVd/view?usp=drive_link",
+      "https://drive.google.com/file/d/1UXdvSMCrs4z0nyim9oQdVNx6tfoj9HG1/view?usp=drive_link",
+      "https://drive.google.com/file/d/1WnYvEHUEH4NNRBlqfsfjQcED7XlRRU2x/view?usp=drive_link",
+      "https://drive.google.com/file/d/1B1LtI9x03s9mhSRs6MyvqBN2zaxcHO8i/view?usp=drive_link",
+      "https://drive.google.com/file/d/1PVyWv_uvIhwvetmsTp9L5l5TxKzGTPnW/view?usp=drive_link",
+      "https://drive.google.com/file/d/1o0o9xtofDmMf2ZZat66x8EUEr9wd4jIE/view?usp=drive_link"
+    ]
+  },
+  {
     "data": "Julho / 2026",
     "titulo": "Agentes Populares",
     "categoria": "Saúde",
@@ -67,11 +84,11 @@
     ]
   },
   {
-    "data": "Junho / 2026",
-    "titulo": "Roda de Afirmações",
+    "data": "Dezembro - Hoje / 2026",
+    "titulo": "Roda de Cogestão do AfirmAções JampaSUS",
     "categoria": "Cultura",
     "cor_borda": "#17A2B8",
-    "descricao": "Inclusão de pontos de fé, acolhimento e práticas integrativas nos demais distritos sanitários da capital.",
+    "descricao": "Atenção e Acompanhamento Domiciliar de Famílias e Ciclo de Formações em Saúde Mental e Práticas Integrativas e Complementares em Saúde.",
     "fotos": [
       "https://drive.google.com/file/d/15rRjEhpmwy7FGxG5ARqGjy3C_3RufgyF/view?usp=drive_link",
       "https://drive.google.com/file/d/1jXV4B-vvQ6XPqogstGI1zZUNw9_Rlud7/view?usp=drive_link",
@@ -81,7 +98,7 @@
   },
   {
     "data": "Maio / 2026",
-    "titulo": "V SUS",
+    "titulo": "VERSUS",
     "categoria": "Cultura",
     "cor_borda": "#17A2B8",
     "descricao": "Inclusão de pontos de fé, acolhimento e práticas integrativas nos demais distritos sanitários da capital.",
