@@ -1,219 +1,223 @@
-/* style.css */
-html {
+/* style.css - Janelas Flutuantes com st.container */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+html, body, [data-testid="stAppViewContainer"] {
     scroll-behavior: smooth;
+    font-family: 'Inter', sans-serif;
+    background-color: #F8F7F4 !important;
 }
 
-h1, h2, h3 { 
-    color: #4C2059 !important; 
+/* Oculta o header nativo transparente do Streamlit */
+[data-testid="stHeader"] {
+    display: none !important;
 }
 
-hr { 
-    border-top: 2px solid #FF5364 !important; 
+.block-container {
+    padding-top: 0rem !important;
+    padding-bottom: 2rem !important;
+    max-width: 95% !important;
 }
 
-/* Estilo dos Círculos de Filtro na Sidebar */
-.circle-filter-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    color: white;
-    font-size: 18px;
-    margin: 0 auto 4px auto;
-    box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.circle-filter-btn:hover {
-    transform: scale(1.15);
-    box-shadow: 0px 4px 8px rgba(0,0,0,0.3);
-}
-
-/* Ajuste dos botões transparentes do Streamlit */
-[data-testid="stSidebar"] div.stButton > button {
-    width: 100%;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    padding: 6px 2px;
-    background-color: #ffffff;
-    font-size: 12px;
-    font-weight: 600;
-    color: #4C2059;
-}
-
-[data-testid="stSidebar"] div.stButton > button:hover {
-    border-color: #FF5364;
-    color: #FF5364;
-}
-
-/* Barra Superior de Navegação */
-.top-nav-bar {
-    background-color: #ED9026;
-    padding: 12px 20px;
-    border-radius: 8px;
+/* 1. BARRA SUPERIOR ROXA */
+.header-top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background-color: #4C2059 !important;
+    padding: 16px 32px;
+    margin-left: -2rem;
+    margin-right: 0rem;
     margin-bottom: 25px;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
 }
 
-.top-nav-btn {
-    color: #4C2059 !important;
-    text-decoration: none !important;
-    font-weight: 600;
-    font-size: 21px;
-    padding: 8px 16px;
-    border-radius: 6px;
-    transition: all 0.2s ease-in-out;
+/* Ajuste da Logo no Header */
+.header-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
 }
 
-.top-nav-btn:hover {
-    background-color: rgba(76, 32, 89, 0.1);
-    color: #FF5364 !important;
+.header-logo {
+    height: 38px !important;
+    width: auto !important;
+    object-fit: contain !important;
 }
 
-/* Sidebar Ajustes */
-[data-testid="stSidebar"] img {
-    border: none !important;
-    outline: none !important;
-    box-shadow: none !important;
-    background-color: transparent !important;
+.header-title {
+    color: #FFFFFF !important;
+    font-size: 22px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
 }
 
-[data-testid="stSidebar"] div[role="radiogroup"] > label {
-    padding: 6px 10px;
-    border-radius: 6px;
-    margin-bottom: 4px;
-    transition: background-color 0.2s ease;
-}
-
-[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-    background-color: rgba(255, 255, 255, 0.65);
-}
-
-/* Linha do Tempo Horizontal */
-.timeline-horizontal-scroll {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: 30px 10px 20px 10px;
-    gap: 25px;
-    scroll-behavior: smooth;
+.header-subtitle {
+    color: rgba(255, 255, 255, 0.75) !important;
+    font-size: 13px !important;
+    margin: 0 !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.3);
+    padding-left: 15px;
     white-space: nowrap;
 }
 
-.timeline-horizontal-scroll::-webkit-scrollbar {
-    height: 10px;
+.header-nav {
+    display: flex;
+    gap: 12px;
+    align-items: center;
 }
 
-.timeline-horizontal-scroll::-webkit-scrollbar-track {
-    background: #F2EAD5;
-    border-radius: 5px;
+.header-nav-btn {
+    color: rgba(255, 255, 255, 0.85) !important;
+    text-decoration: none !important;
+    font-weight: 500;
+    font-size: 14px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
-.timeline-horizontal-scroll::-webkit-scrollbar-thumb {
-    background: #FF5364;
-    border-radius: 5px;
+.header-nav-btn:hover {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.header-nav-btn.active {
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-bottom: 3px solid #00D2FF;
+}
+
+/* 2. ESTILIZAÇÃO DAS JANELAS FLUTUANTES (CARD BRANCO TRANSLÚCIDO) */
+[data-testid="stVerticalBlock"] > div:has(> div > div.element-container ) {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    backdrop-filter: blur(8px) !important;
+    border-radius: 16px !important;
+    padding: 24px 24px !important;
+    margin-bottom: 25px !important;
+    border: 1px solid #EAE6DF !important;
+    box-shadow: 0px 6px 20px rgba(76, 32, 89, 0.05) !important;
+}
+
+/* Garante que o container pai do Streamlit não limite a largura */
+.block-container {
+    padding-top: 0rem !important;
+    padding-bottom: 2rem !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    max-width: 98% !important; /* Aumentado de 95% para 98% */
+}
+
+/* Oculta marcador auxiliar */
+div.floating-window {
+    display: none ;
+}
+
+.section-divider {
+    border: none !important;
+    height: 3px !important;
+    background-color: #FF8C00 !important; /* Cor Laranja */
+    border-radius: 2px !important;
+    margin: 35px 0 !important;
+    opacity: 0.85;
+}
+
+/* 3. Sidebar Ajustes */
+[data-testid="stSidebar"] {
+    background-color: #FAFAFA !important;
+    border-right: 1px solid #EAE6DF !important;
+}
+
+[data-testid="stSidebar"] div.stButton > button {
+    width: 100% !important;
+    border-radius: 8px !important;
+    border: 1px solid #EAE6DF !important;
+    padding: 8px !important;
+    background-color: #FFFFFF !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #4C2059 !important;
+    transition: all 0.2s ease !important;
+}
+
+[data-testid="stSidebar"] div.stButton > button:hover {
+    border-color: #4C2059 !important;
+    background-color: #4C2059 !important;
+    color: #FFFFFF !important;
+}
+
+.circle-filter-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    color: white !important;
+    font-size: 16px !important;
+    margin: 0 auto 6px auto !important;
+    box-shadow: 0px 2px 6px rgba(0,0,0,0.08) !important;
+    transition: transform 0.2s ease !important;
+}
+
+.circle-filter-btn:hover {
+    transform: scale(1.1) !important;
+}
+
+/* 4. Linha do Tempo Horizontal */
+.timeline-horizontal-scroll {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding: 15px 5px 20px 5px !important;
+    gap: 20px !important;
 }
 
 .timeline-card-h {
-    flex: 0 0 300px;
-    background-color: #F2EAD5;
-    border-radius: 12px;
-    padding: 16px;
-    position: relative;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    white-space: normal;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.2s;
+    flex: 0 0 280px !important;
+    background-color: #FFFFFF !important;
+    border-radius: 12px !important;
+    padding: 18px !important;
+    border: 1px solid #EAE6DF !important;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.04) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    transition: transform 0.2s ease !important;
 }
 
 .timeline-card-h:hover {
-    transform: translateY(-5px);
-}
-
-.timeline-card-h::before {
-    content: '';
-    position: absolute;
-    top: -15px;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background-color: #FF5364;
-}
-
-.timeline-card-h::after {
-    content: '';
-    position: absolute;
-    top: -21px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 16px;
-    height: 16px;
-    background-color: #4C2059;
-    border: 3px solid #FF5364;
-    border-radius: 50%;
+    transform: translateY(-4px) !important;
 }
 
 .timeline-date-h {
-    font-weight: bold;
-    color: #FF5364;
-    font-size: 13px;
-    margin-bottom: 6px;
+    font-weight: 700 !important;
+    color: #8C529B !important;
+    font-size: 12px !important;
+    margin-bottom: 6px !important;
 }
 
 .timeline-title-h {
-    font-weight: bold;
-    color: #4C2059;
-    font-size: 16px;
-    margin-bottom: 8px;
-    line-height: 1.2;
+    font-weight: 700 !important;
+    color: #4C2059 !important;
+    font-size: 15px !important;
+    margin-bottom: 8px !important;
 }
 
 .timeline-desc-h {
-    color: #333333;
-    font-size: 13px;
-    margin-bottom: 12px;
-    flex-grow: 1;
+    color: #555555 !important;
+    font-size: 13px !important;
+    margin-bottom: 12px !important;
 }
 
 .timeline-img-h {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 8px;
-}
-
-/* Slider da Timeline */
-.timeline-slider {
-    position: relative;
-    width: 100%;
-    height: 180px;
-    overflow: hidden;
-    border-radius: 8px;
-}
-
-.timeline-slider img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    opacity: 0;
-    animation: fadeSlider 12s infinite;
-}
-
-@keyframes fadeSlider {
-    0% { opacity: 0; }
-    10% { opacity: 1; }
-    40% { opacity: 1; }
-    50% { opacity: 0; }
-    100% { opacity: 0; }
+    width: 100% !important;
+    height: 130px !important;
+    object-fit: cover !important;
+    border-radius: 8px !important;
 }
