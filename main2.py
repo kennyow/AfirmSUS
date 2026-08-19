@@ -352,30 +352,29 @@ with v_col1:
 with v_col2:
     st.markdown("### Vídeo 2")
     
-    st.video("https://www.youtube.com/watch?v=SJQncTxsZL4")
+    st.video("https://www.youtube.com/watch?v=1zlLovtiBd4")
     
     st.markdown(
-        "**Título do vídeo:** IMUNIZAÇÃO NA SAÚDE INDÍGENA"
+        "**Título do vídeo:** Entrevista com o professor Allef Santana"
     )
     
     st.write(
         "Vídeo relacionado à territorialização da saúde e "
-        "à identificação dos equipamentos e serviços públicos."
+        "à identificação das dinâmicas sócio-territoriais ."
     )
 
 
 with v_col3:
     st.markdown("### Vídeo 3")
     
-    st.video("https://www.youtube.com/watch?v=6aHxgKfq01U")
+    st.video("https://www.youtube.com/watch?v=5MPQ0RQoEmw")
     
     st.markdown(
-        "**Título do vídeo:** SEMINÁRIO AFIRMASUS UNEMAT"
+        "**Título do vídeo:**Entrevista com Lidiane Tributino e Vitor Marinho"
     )
     
     st.write(
-        "Conteúdo relacionado às ações do programa, "
-        "à permanência estudantil e à diversidade na área da saúde."
+        "Conteúdo relacionado à clínica ampliada e compartilhada, com foco na atenção primária à saúde e na importância da participação comunitária."
     )
 
 
