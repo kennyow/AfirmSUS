@@ -295,28 +295,76 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. LINHA DO TEMPO HORIZONTAL (JANELA 3)
+# 4. LINHA DO TEMPO HORIZONTAL (JANELA 3 - COM CARROSSEL)
 # ---------------------------------------------------------
 st.markdown('<div id="linha-do-tempo"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("🕐 Linha do Tempo de Atividades")
 
+    # CSS para a animação do carrossel/slideshow automático dentro do card
+    st.markdown("""
+        <style>
+        .timeline-slider {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        .timeline-slider img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            animation: fadeSlider 12s infinite;
+        }
+        @keyframes fadeSlider {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            40% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 0; }
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
     try:
         with open("timeline.json", "r", encoding="utf-8") as f:
             eventos_timeline = json.load(f)
-    except Exception:
+    except Exception as e:
+        st.error(f"Erro ao carregar timeline.json: {e}")
         eventos_timeline = []
 
     cards_html = []
     for ev in eventos_timeline:
-        lista_fotos_raw = ev.get("fotos", []) or ([ev["foto"]] if ev.get("foto") else [])
+        # Trata a lista de fotos ou fallback para foto única
+        lista_fotos_raw = ev.get("fotos", [])
+        if not lista_fotos_raw and ev.get("foto"):
+            lista_fotos_raw = [ev["foto"]]
+        
+        # Converte links do Google Drive
         fotos_convertidas = [converter_link_drive(url) for url in lista_fotos_raw]
         
-        tag_foto = f'<img src="{fotos_convertidas[0]}" class="timeline-img-h">' if fotos_convertidas else ''
+        # Lógica para montar a tag de imagem ou o container slider animado
+        if len(fotos_convertidas) > 1:
+            total_fotos = len(fotos_convertidas)
+            imgs_html = []
+            for idx, img_url in enumerate(fotos_convertidas):
+                delay = idx * (12 / total_fotos)
+                imgs_html.append(f'<img src="{img_url}" class="timeline-img-h" style="animation-delay: {delay}s;">')
+            tag_foto = f'<div class="timeline-slider">{"".join(imgs_html)}</div>'
+        elif len(fotos_convertidas) == 1:
+            tag_foto = f'<img src="{fotos_convertidas[0]}" class="timeline-img-h">'
+        else:
+            tag_foto = ''
 
+        # HTML do Card
         card = (
-            f'<div class="timeline-card-h" style="border-top: 4px solid {ev.get("cor_borda", "#4C2059")};">'
+            f'<div class="timeline-card-h" style="border-top: 5px solid {ev.get("cor_borda", "#4C2059")};">'
             f'<div>'
             f'<div class="timeline-date-h">📅 {ev["data"]}</div>'
             f'<div class="timeline-title-h">{ev["titulo"]}</div>'

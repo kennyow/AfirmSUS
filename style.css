@@ -6,7 +6,7 @@
 html, body, [data-testid="stAppViewContainer"] {
     scroll-behavior: smooth;
     font-family: 'Inter', sans-serif;
-    background-color: #F8F7F4!important; /*#F8F7F4 */
+    background-color: #dbd5c1!important; /*#F8F7F4 */
 }
 
 /* Oculta o header nativo transparente do Streamlit */
