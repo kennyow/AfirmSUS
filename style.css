@@ -1,4 +1,4 @@
-/* style.css - Janelas Flutuantes com st.container */
+/* style.css - Janelas Flutuantes + Correção do Botão da Sidebar */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
@@ -6,18 +6,55 @@
 html, body, [data-testid="stAppViewContainer"] {
     scroll-behavior: smooth;
     font-family: 'Inter', sans-serif;
-    background-color: #4C2059!important; /*#F8F7F4 */
+    background-color: #4C2059 !important;
 }
 
-/* Oculta o header nativo transparente do Streamlit */
+/* =========================================================
+   CORREÇÃO DO HEADER E BOTÃO DA SIDEBAR
+   ========================================================= */
+
+/* Torna o header nativo transparente e sem altura fixa */
 [data-testid="stHeader"] {
+    background-color: transparent !important;
+    z-index: 1000 !important;
+    height: 0px !important;
+}
+
+/* Oculta apenas os elementos da direita (três pontinhos e status) */
+[data-testid="stHeader"] > div:nth-child(2) {
     display: none !important;
+}
+
+/* Garante que o botão de reabrir a Sidebar fiques visível, no topo e fixo */
+[data-testid="stHeader"] [data-testid="stSidebarCollapseButton"],
+button[aria-label="Expand sidebar"],
+button[aria-label="Open sidebar"] {
+    position: fixed !important;
+    top: 12px !important;
+    left: 12px !important;
+    z-index: 1001 !important;
+    background-color: #FFFFFF !important;
+    border: 1px solid #EAE6DF !important;
+    border-radius: 8px !important;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15) !important;
+    color: #4C2059 !important;
+    visibility: visible !important;
+    display: flex !important;
+}
+
+[data-testid="stHeader"] [data-testid="stSidebarCollapseButton"]:hover,
+button[aria-label="Expand sidebar"]:hover,
+button[aria-label="Open sidebar"]:hover {
+    background-color: #4C2059 !important;
+    color: #FFFFFF !important;
 }
 
 .block-container {
     padding-top: 0rem !important;
     padding-bottom: 2rem !important;
-    max-width: 95% !important;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    max-width: 98% !important;
 }
 
 /* 1. BARRA SUPERIOR ROXA */
@@ -28,7 +65,7 @@ html, body, [data-testid="stAppViewContainer"] {
     background-color: #4C2059 !important;
     padding: 16px 32px;
     margin-left: -2rem;
-    margin-right: 0rem;
+    margin-right: -2rem;
     margin-bottom: 25px;
     display: flex;
     justify-content: space-between;
@@ -36,7 +73,6 @@ html, body, [data-testid="stAppViewContainer"] {
     box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.15);
 }
 
-/* Ajuste da Logo no Header */
 .header-brand {
     display: flex !important;
     align-items: center !important;
@@ -58,7 +94,7 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .header-subtitle {
-    color: #F7891B !important;
+    color: #f7891b !important;
     font-size: 13px !important;
     margin: 0 !important;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
@@ -88,8 +124,6 @@ html, body, [data-testid="stAppViewContainer"] {
     background-color: rgba(255, 255, 255, 0.15);
 }
 
-
-
 /* 2. ESTILIZAÇÃO DAS JANELAS FLUTUANTES (CARD BRANCO TRANSLÚCIDO) */
 [data-testid="stVerticalBlock"] > div:has(> div > div.element-container ) {
     background-color: rgba(255, 255, 255, 0.9) !important;
@@ -101,26 +135,16 @@ html, body, [data-testid="stAppViewContainer"] {
     box-shadow: 0px 6px 20px rgba(76, 32, 89, 0.05) !important;
 }
 
-/* Garante que o container pai do Streamlit não limite a largura */
-.block-container {
-    padding-top: 0rem !important;
-    padding-bottom: 2rem !important;
-    padding-left: 1.5rem !important;
-    padding-right: 1.5rem !important;
-    max-width: 98% !important; /* Aumentado de 95% para 98% */
-}
-
-/* Oculta marcador auxiliar */
 div.floating-window {
-    display: none ;
+    display: none;
 }
 
 .section-divider {
     border: none !important;
     height: 3px !important;
-    background-color: #FF8C00 !important; /* Cor Laranja */
+    background-color: #FF8C00 !important;
     border-radius: 2px !important;
-    margin: 15px 0 !important;
+    margin: 35px 0 !important;
     opacity: 0.85;
 }
 
