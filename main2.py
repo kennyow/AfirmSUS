@@ -71,6 +71,9 @@ header_html = textwrap.dedent(f"""
 
 st.markdown(header_html, unsafe_allow_html=True)
 
+# LINHA LARANJA SEPARADORA
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
 # ---------------------------------------------------------
 # 1. BARRA LATERAL (Filtros de Pesquisa)
 # ---------------------------------------------------------

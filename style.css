@@ -6,7 +6,7 @@
 html, body, [data-testid="stAppViewContainer"] {
     scroll-behavior: smooth;
     font-family: 'Inter', sans-serif;
-    background-color: #dbd5c1!important; /*#F8F7F4 */
+    background-color: #4C2059!important; /*#F8F7F4 */
 }
 
 /* Oculta o header nativo transparente do Streamlit */
@@ -58,7 +58,7 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .header-subtitle {
-    color: rgba(255, 255, 255, 0.75) !important;
+    color: #F7891B !important;
     font-size: 13px !important;
     margin: 0 !important;
     border-left: 1px solid rgba(255, 255, 255, 0.3);
@@ -120,7 +120,7 @@ div.floating-window {
     height: 3px !important;
     background-color: #FF8C00 !important; /* Cor Laranja */
     border-radius: 2px !important;
-    margin: 35px 0 !important;
+    margin: 15px 0 !important;
     opacity: 0.85;
 }
 
