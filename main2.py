@@ -86,7 +86,7 @@ if logo_sidebar_url:
     st.sidebar.markdown(
         f'''
         <div style="text-align: center; margin-bottom: 20px;">
-            <img src="{logo_sidebar_url}" style="max-width: 80%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
+            <img src="{logo_sidebar_url}" style="max-width: 100%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
         </div>
         ''',
         unsafe_allow_html=True
@@ -430,10 +430,10 @@ with st.container():
     st.subheader("ℹ️ Informações e Plataformas")
 
     links_info = [
-        {"nome": "Ushahidi", "desc": "Mapeamento colaborativo.", "url": "https://kennyow.ushahidi.io/map", "logo": "./static/logo_ushahidi.png"},
-        {"nome": "Partimap", "desc": "Cartografia comunitária.", "url": "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", "logo": "./static/logo_partimap.png"},
-        {"nome": "ChronoFlo", "desc": "Linha do tempo interativa.", "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", "logo": "https://drive.google.com/file/d/1xYy64kObKCJPmg8XP6lnE1oARwZRVNpy/view?usp=drive_link"},
-        {"nome": "Instagram", "desc": "Perfil oficial do projeto.", "url": "https://www.instagram.com/afirmasusjp/", "logo": "./static/logo_insta.png"}
+        {"nome": "Ushahidi", "desc": "Mapeamento colaborativo.", "url": "https://kennyow.ushahidi.io/map", "logo": "https://drive.google.com/file/d/1Y7DiHORMbXRFZfM-v3jTHC07aSl6sYse/view?usp=drive_link"},
+        {"nome": "Partimap", "desc": "Cartografia comunitária.", "url": "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", "logo": "https://drive.google.com/file/d/1UJOoYTfH2HXFPEzPurd_gCE3qmqirWgp/view?usp=drive_link"},
+        {"nome": "ChronoFlo", "desc": "Linha do tempo interativa.", "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", "logo": "https://drive.google.com/file/d/1z3b8OyQeX2PMXoCLO3g-_pFtsNdhUi0G/view?usp=drive_link"},
+        {"nome": "Instagram", "desc": "Perfil oficial do projeto.", "url": "https://www.instagram.com/afirmasusjp/", "logo": "https://drive.google.com/file/d/1P6sTla2_5gbSwTpraremHHL9uGRAQ7Vp/view?usp=drive_link"}
     ]
 
     cols_info = st.columns(4)

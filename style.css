@@ -44,7 +44,7 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .header-logo {
-    height: 50px !important;
+    height: 70px !important;
     width: auto !important;
     object-fit: contain !important;
 }
