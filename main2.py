@@ -63,6 +63,9 @@ header_html = textwrap.dedent(f"""
 
 st.markdown(header_html, unsafe_allow_html=True)
 
+# LINHA LARANJA SEPARADORA
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
 # ---------------------------------------------------------
 # 1. BARRA LATERAL (Filtros de Pesquisa)
 # ---------------------------------------------------------
@@ -74,7 +77,7 @@ if logo_sidebar_url:
     st.sidebar.markdown(
         f'''
         <div style="text-align: center; margin-bottom: 20px;">
-            <img src="{logo_sidebar_url}" style="max-width: 80%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
+            <img src="{logo_sidebar_url}" style="max-width: 100%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
         </div>
         ''',
         unsafe_allow_html=True
@@ -135,13 +138,13 @@ if "categoria_selecionada" not in st.session_state:
     st.session_state["categoria_selecionada"] = "Todas"
 
 MAPA_CATEGORIAS = {
-    "Esporte e Lazer": {"cor": "#FF8C00", "icone": "person-running"},
-    "Saúde":           {"cor": "#28A745", "icone": "user-md"},
-    "Educação":        {"cor": "#856eaf", "icone": "user-graduate"},
-    "Religião":        {"cor": "#7BDCEB", "icone": "place-of-worship"},
-    "Cultura":         {"cor": "#D1C7A5", "icone": "landmark"},
-    "Comércio":        {"cor": "#DC3545", "icone": "shopping-cart"},
-    "Administrativo":  {"cor": "#CF68E3", "icone": "briefcase"}
+    "Esporte e Lazer": {"cor": "#FF8C00", "icone": "🏃"},
+    "Saúde":           {"cor": "#28A745", "icone": "🩺"},
+    "Educação":        {"cor": "#856eaf", "icone": "🎓"},
+    "Religião":        {"cor": "#7BDCEB", "icone": "️⛪"},
+    "Cultura":         {"cor": "#D1C7A5", "icone": "🏛️"},
+    "Comércio":        {"cor": "#DC3545", "icone": "🛒"},
+    "Administrativo":  {"cor": "#CF68E3", "icone": "💼"}
 }
 
 if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
@@ -150,71 +153,30 @@ if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
 else:
     distrito_selecionado = "Todos"
 
-# Captura o clique dos botões circulares via Query Parameters
-query_params = st.query_params
-if "cat" in query_params:
-    cat_param = query_params["cat"]
-    st.session_state["categoria_selecionada"] = cat_param
-    del st.query_params["cat"]
-    st.rerun()
-
 st.sidebar.markdown("**Categorias**")
+
 if st.sidebar.button("✨ Exibir Todas", use_container_width=True):
     st.session_state["categoria_selecionada"] = "Todas"
     st.rerun()
 
 categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
 
-html_content = """
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-    body { margin: 0; background-color: transparent; }
-    .cat-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px 10px;
-        justify-content: flex-start;
-        align-items: center;
-        padding: 5px;
-    }
-    .cat-circle-link {
-        text-decoration: none !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 46px;
-        height: 46px;
-        border-radius: 50%;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        box-sizing: border-box;
-    }
-    .cat-circle-link:hover {
-        transform: scale(1.15);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .cat-circle-link i {
-        color: white;
-        font-size: 18px;
-    }
-</style>
-<div class="cat-grid">
-"""
+# Criação de Botões em Grid Nativo do Streamlit para Garantir Funcionamento na Nuvem
+cols = st.sidebar.columns(4)
+for i, cat in enumerate(categorias_existentes):
+    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "📍"})
+    col_idx = i % 4
+    with cols[col_idx]:
+        # Exibe o botão de filtro com o ícone correspondente
+        if st.button(info["icone"], key=f"cat_btn_{cat}", help=cat, use_container_width=True):
+            st.session_state["categoria_selecionada"] = cat
+            st.rerun()
 
-for cat in categorias_existentes:
-    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "map-marker"})
-    is_selected = (st.session_state["categoria_selecionada"] == cat)
-    
-    estilo_selecionado = "border: 3px solid #222222;" if is_selected else "border: none;"
-    
-    html_content += f'<a href="?cat={cat}" target="_top" class="cat-circle-link" title="Categoria: {cat}" style="background-color: {info["cor"]}; {estilo_selecionado}"><i class="fa-solid fa-{info["icone"]}"></i></a>'
-
-html_content += "</div>"
-
-st.sidebar.markdown(html_content, unsafe_allow_html=True)
+if st.session_state["categoria_selecionada"] != "Todas":
+    st.sidebar.info(f"Filtro ativo: **{st.session_state['categoria_selecionada']}**")
 
 # ---------------------------------------------------------
-# APLICAÇÃO DOS FILTROS NO DATAFRAME (RESTAURADO)
+# APLICAÇÃO DOS FILTROS NO DATAFRAME
 # ---------------------------------------------------------
 categoria_selecionada = st.session_state["categoria_selecionada"]
 
@@ -230,7 +192,8 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
 st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; margin: 4px 0 4px 0; opacity: 0.6;" />', unsafe_allow_html=True)
 st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
 
-caminho_base_imagens = r"G:\.shortcut-targets-by-id\1etsHUqyiieSU_ujw74Wnk7YCxp4Td8gI\AfirmAções JampaSUS SR\AfirmaSUS\Imagens"
+# Busca as fotos na pasta local 'Imagens' que foi commitada no seu repositório Git
+caminho_base_imagens = "Imagens"
 
 def obter_pastas_e_imagens(caminho_raiz):
     pastas_dict = {}
@@ -289,7 +252,7 @@ if pastas_encontradas:
         dados_da_pasta = pastas_encontradas[pasta_selecionada]
         exibir_modal_fotos_locais(dados_da_pasta)
 else:
-    st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos no Drive ou a pasta está vazia.")
+    st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos. Verifique se a pasta 'Imagens' está no repositório.")
 
 # ---------------------------------------------------------
 # 2. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
@@ -507,10 +470,10 @@ with st.container():
     st.subheader("ℹ️ Informações e Plataformas")
 
     links_info = [
-        {"nome": "Ushahidi", "desc": "Mapeamento colaborativo.", "url": "https://kennyow.ushahidi.io/map", "logo": "./static/logo_ushahidi.png"},
-        {"nome": "Partimap", "desc": "Cartografia comunitária.", "url": "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", "logo": "./static/logo_partimap.png"},
-        {"nome": "ChronoFlo", "desc": "Linha do tempo interativa.", "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", "logo": "https://drive.google.com/file/d/1xYy64kObKCJPmg8XP6lnE1oARwZRVNpy/view?usp=drive_link"},
-        {"nome": "Instagram", "desc": "Perfil oficial do projeto.", "url": "https://www.instagram.com/afirmasusjp/", "logo": "./static/logo_insta.png"}
+        {"nome": "Ushahidi", "desc": "Mapeamento colaborativo.", "url": "https://kennyow.ushahidi.io/map", "logo": "https://drive.google.com/file/d/1Y7DiHORMbXRFZfM-v3jTHC07aSl6sYse/view?usp=drive_link"},
+        {"nome": "Partimap", "desc": "Cartografia comunitária.", "url": "https://www.partimap.eu/en/p/AfirmaSUSJP/0?force=1", "logo": "https://drive.google.com/file/d/1UJOoYTfH2HXFPEzPurd_gCE3qmqirWgp/view?usp=drive_link"},
+        {"nome": "ChronoFlo", "desc": "Linha do tempo interativa.", "url": "https://www.chronoflotimeline.com/timeline/shared/32199/AfirmaSUS/", "logo": "https://drive.google.com/file/d/1z3b8OyQeX2PMXoCLO3g-_pFtsNdhUi0G/view?usp=drive_link"},
+        {"nome": "Instagram", "desc": "Perfil oficial do projeto.", "url": "https://www.instagram.com/afirmasusjp/", "logo": "https://drive.google.com/file/d/1P6sTla2_5gbSwTpraremHHL9uGRAQ7Vp/view?usp=drive_link"}
     ]
 
     cols_info = st.columns(4)
