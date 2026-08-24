@@ -202,6 +202,80 @@ if distrito_selecionado != "Todos" and 'distrito' in df_filtrado.columns:
 if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
     df_filtrado = df_filtrado[df_filtrado["categoria"] == categoria_selecionada]
 
+
+# ---------------------------------------------------------
+# FILTRO DE GALERIA DE FOTOS NA BARRA LATERAL (AJUSTADO PARA SCROLL COMPLETO)
+# ---------------------------------------------------------
+# Divisor discreto e colado nas categorias
+st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; margin: 4px 0 4px 0; opacity: 0.6;" />', unsafe_allow_html=True)
+st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
+
+
+# Caminho da pasta local do Google Drive
+caminho_base_imagens = r"G:\.shortcut-targets-by-id\1etsHUqyiieSU_ujw74Wnk7YCxp4Td8gI\AfirmAções JampaSUS SR\AfirmaSUS\Imagens"
+
+# Função para listar subpastas e imagens
+def obter_pastas_e_imagens(caminho_raiz):
+    pastas_dict = {}
+    if os.path.exists(caminho_raiz):
+        for item in sorted(os.listdir(caminho_raiz)):
+            caminho_completo = os.path.join(caminho_raiz, item)
+            if os.path.isdir(caminho_completo):
+                imagens = [
+                    os.path.join(caminho_completo, f) 
+                    for f in sorted(os.listdir(caminho_completo)) 
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif'))
+                ]
+                if imagens:
+                    pastas_dict[f"📁 {item}"] = {
+                        "titulo": item,
+                        "caminho_pasta": caminho_completo,
+                        "fotos": imagens
+                    }
+    return pastas_dict
+
+# Modal com fotos padronizadas
+@st.dialog("🖼️ Galeria de Fotos", width="large")
+def exibir_modal_fotos_locais(dados_pasta):
+    st.markdown(f"### {dados_pasta['titulo']}")
+    fotos = dados_pasta['fotos']
+
+    if len(fotos) == 1:
+        st.markdown(f'''
+            <div class="foto-modal-frame">
+                <img src="data:image/jpeg;base64,{base64.b64encode(open(fotos[0], "rb").read()).decode()}" />
+            </div>
+        ''', unsafe_allow_html=True)
+    else:
+        abas = st.tabs([f"📷 Foto {i+1}" for i in range(len(fotos))])
+        for idx, tab in enumerate(abas):
+            with tab:
+                with open(fotos[idx], "rb") as f_img:
+                    encoded_img = base64.b64encode(f_img.read()).decode()
+                st.markdown(f'''
+                    <div class="foto-modal-frame">
+                        <img src="data:image/jpeg;base64,{encoded_img}" />
+                    </div>
+                ''', unsafe_allow_html=True)
+
+# Busca as pastas dinamicamente
+pastas_encontradas = obter_pastas_e_imagens(caminho_base_imagens)
+
+if pastas_encontradas:
+    opcoes = ["Selecione uma pasta..."] + list(pastas_encontradas.keys())
+    
+    pasta_selecionada = st.sidebar.selectbox(
+        "Escolha a pasta de imagens:", 
+        options=opcoes,
+        key="select_galeria_drive_local"
+    )
+
+    if pasta_selecionada != "Selecione uma pasta...":
+        dados_da_pasta = pastas_encontradas[pasta_selecionada]
+        exibir_modal_fotos_locais(dados_da_pasta)
+else:
+    st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos no Drive ou a pasta está vazia.")
+
 # ---------------------------------------------------------
 # 2. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
 # ---------------------------------------------------------
