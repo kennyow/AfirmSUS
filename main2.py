@@ -193,7 +193,7 @@ st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; mar
 st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
 
 # Busca as fotos na pasta local 'Imagens' que foi commitada no seu repositório Git
-caminho_base_imagens = "Imagens"
+caminho_base_imagens = r"G:\.shortcut-targets-by-id\1etsHUqyiieSU_ujw74Wnk7YCxp4Td8gI\AfirmAções JampaSUS SR\AfirmaSUS\Imagens"
 
 def obter_pastas_e_imagens(caminho_raiz):
     pastas_dict = {}
