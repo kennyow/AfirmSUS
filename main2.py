@@ -21,8 +21,6 @@ def converter_link_drive(url):
         return f"https://lh3.googleusercontent.com/d/{file_id}"
     return url
 
-
-
 # Configuração da Página
 st.set_page_config(
     layout="wide", 
@@ -41,17 +39,11 @@ carregar_css("style.css")
 # ---------------------------------------------------------
 # BARRA SUPERIOR ROXA (COM LOGO)
 # ---------------------------------------------------------
-# Altere o caminho da logo abaixo para o arquivo/link correto da sua imagem
-# Cole o link de compartilhamento do seu arquivo no Google Drive aqui
 link_drive_logo = "https://drive.google.com/file/d/1YAMa6Ume30aX75c-p0w9BV15bWlKZkeY/view?usp=drive_link"
-
-# Converter o link do Drive para URL direta de imagem
 logo_url = converter_link_drive(link_drive_logo)
 
-# Criar a tag HTML da logo
 tag_logo_html = f'<img src="{logo_url}" class="header-logo" alt="Logo AfirmaSUS">' if logo_url else ''
 
-# HTML limpo com textwrap.dedent para evitar que o Streamlit mostre o código na tela
 header_html = textwrap.dedent(f"""
     <div class="header-top-bar" id="territorio">
         <div class="header-brand">
@@ -78,13 +70,9 @@ st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 # 1. BARRA LATERAL (Filtros de Pesquisa)
 # ---------------------------------------------------------
 
-# Cole aqui o link de compartilhamento da logo no Google Drive
 link_drive_logo_sidebar = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
-
-# Conversão para URL direta
 logo_sidebar_url = converter_link_drive(link_drive_logo_sidebar)
 
-# Exibição da logo no topo da Sidebar
 if logo_sidebar_url:
     st.sidebar.markdown(
         f'''
@@ -95,7 +83,6 @@ if logo_sidebar_url:
         unsafe_allow_html=True
     )
 
-# Parágrafo explicativo entre linhas laranjas discretas
 st.sidebar.markdown(
     """
     <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0; opacity: 0.6;" />
@@ -109,10 +96,7 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-
-
 st.sidebar.markdown("### Filtros de Pesquisa")
-
 
 caminho_json = "dados_locais.json"
 if not os.path.exists(caminho_json):
@@ -169,34 +153,72 @@ if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
 else:
     distrito_selecionado = "Todos"
 
-st.sidebar.markdown("**Categorias**")
-if st.sidebar.button("✨ Exibir Todas", width='stretch'):
-    st.session_state["categoria_selecionada"] = "Todas"
+# Captura o clique dos botões circulares via Query Parameters
+query_params = st.query_params
+if "cat" in query_params:
+    cat_param = query_params["cat"]
+    st.session_state["categoria_selecionada"] = cat_param
+    del st.query_params["cat"]
+    st.rerun()
 
-cols_cat = st.sidebar.columns(2)
+st.sidebar.markdown("**Categorias**")
+if st.sidebar.button("✨ Exibir Todas", use_container_width=True):
+    st.session_state["categoria_selecionada"] = "Todas"
+    st.rerun()
+
 categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
 
-for idx, cat in enumerate(categorias_existentes):
-    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "map-marker"})
-    col = cols_cat[idx % 2]
-    
-    with col:
-        st.markdown(
-            f'''
-            <div style="text-align: center;">
-                <div class="circle-filter-btn" style="background-color: {info['cor']};">
-                    <i class="fa fa-{info['icone']}" style="color: white; font-size: 18px;"></i>
-                </div>
-            </div>
-            ''', 
-            unsafe_allow_html=True
-        )
-        is_selected = (st.session_state["categoria_selecionada"] == cat)
-        label_btn = f"✓ {cat}" if is_selected else cat
-        if st.button(label_btn, key=f"btn_cat_{cat}", width='stretch'):
-            st.session_state["categoria_selecionada"] = cat
-            st.rerun()
+html_content = """
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body { margin: 0; background-color: transparent; }
+    .cat-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 10px;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 5px;
+    }
+    .cat-circle-link {
+        text-decoration: none !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-sizing: border-box;
+    }
+    .cat-circle-link:hover {
+        transform: scale(1.15);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .cat-circle-link i {
+        color: white;
+        font-size: 18px;
+    }
+</style>
+<div class="cat-grid">
+"""
 
+for cat in categorias_existentes:
+    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "map-marker"})
+    is_selected = (st.session_state["categoria_selecionada"] == cat)
+    
+    estilo_selecionado = "border: 3px solid #222222;" if is_selected else "border: none;"
+    
+    html_content += f'<a href="?cat={cat}" target="_top" class="cat-circle-link" title="Categoria: {cat}" style="background-color: {info["cor"]}; {estilo_selecionado}"><i class="fa-solid fa-{info["icone"]}"></i></a>'
+
+html_content += "</div>"
+
+st.sidebar.markdown(html_content, unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# APLICAÇÃO DOS FILTROS NO DATAFRAME (RESTAURADO)
+# ---------------------------------------------------------
 categoria_selecionada = st.session_state["categoria_selecionada"]
 
 df_filtrado = df_locais.copy()
@@ -206,11 +228,77 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
     df_filtrado = df_filtrado[df_filtrado["categoria"] == categoria_selecionada]
 
 # ---------------------------------------------------------
+# FILTRO DE GALERIA DE FOTOS NA BARRA LATERAL
+# ---------------------------------------------------------
+st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; margin: 4px 0 4px 0; opacity: 0.6;" />', unsafe_allow_html=True)
+st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
+
+caminho_base_imagens = r"G:\.shortcut-targets-by-id\1etsHUqyiieSU_ujw74Wnk7YCxp4Td8gI\AfirmAções JampaSUS SR\AfirmaSUS\Imagens"
+
+def obter_pastas_e_imagens(caminho_raiz):
+    pastas_dict = {}
+    if os.path.exists(caminho_raiz):
+        for item in sorted(os.listdir(caminho_raiz)):
+            caminho_completo = os.path.join(caminho_raiz, item)
+            if os.path.isdir(caminho_completo):
+                imagens = [
+                    os.path.join(caminho_completo, f) 
+                    for f in sorted(os.listdir(caminho_completo)) 
+                    if f.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif'))
+                ]
+                if imagens:
+                    pastas_dict[f"📁 {item}"] = {
+                        "titulo": item,
+                        "caminho_pasta": caminho_completo,
+                        "fotos": imagens
+                    }
+    return pastas_dict
+
+@st.dialog("🖼️ Galeria de Fotos", width="large")
+def exibir_modal_fotos_locais(dados_pasta):
+    st.markdown(f"### {dados_pasta['titulo']}")
+    fotos = dados_pasta['fotos']
+
+    if len(fotos) == 1:
+        st.markdown(f'''
+            <div class="foto-modal-frame">
+                <img src="data:image/jpeg;base64,{base64.b64encode(open(fotos[0], "rb").read()).decode()}" />
+            </div>
+        ''', unsafe_allow_html=True)
+    else:
+        abas = st.tabs([f"📷 Foto {i+1}" for i in range(len(fotos))])
+        for idx, tab in enumerate(abas):
+            with tab:
+                with open(fotos[idx], "rb") as f_img:
+                    encoded_img = base64.b64encode(f_img.read()).decode()
+                st.markdown(f'''
+                    <div class="foto-modal-frame">
+                        <img src="data:image/jpeg;base64,{encoded_img}" />
+                    </div>
+                ''', unsafe_allow_html=True)
+
+pastas_encontradas = obter_pastas_e_imagens(caminho_base_imagens)
+
+if pastas_encontradas:
+    opcoes = ["Selecione uma pasta..."] + list(pastas_encontradas.keys())
+    
+    pasta_selecionada = st.sidebar.selectbox(
+        "Escolha a pasta de imagens:", 
+        options=opcoes,
+        key="select_galeria_drive_local"
+    )
+
+    if pasta_selecionada != "Selecione uma pasta...":
+        dados_da_pasta = pastas_encontradas[pasta_selecionada]
+        exibir_modal_fotos_locais(dados_da_pasta)
+else:
+    st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos no Drive ou a pasta está vazia.")
+
+# ---------------------------------------------------------
 # 2. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
 # ---------------------------------------------------------
 st.markdown('<div id="territorio"></div>', unsafe_allow_html=True)
 
-# Verifica se há dados para mostrar no mapa
 if df_filtrado.empty:
     st.warning("⚠️ Nenhum dado disponível para exibir no mapa.")
     st.info("Verifique se o arquivo JSON tem dados válidos com coordenadas (lat/lon).")
@@ -260,7 +348,6 @@ with st.container():
             lon_clicada = map_data["last_object_clicked"]["lng"]
             
             if not df_filtrado.empty:
-                # Calcula a menor distância ao invés de usar arredondamento fixo
                 df_temp = df_filtrado.copy()
                 df_temp["distancia"] = (
                     (df_temp["lat"] - lat_clicada) ** 2 + 
@@ -268,7 +355,6 @@ with st.container():
                 )
                 ponto_mais_proximo = df_temp.sort_values("distancia").iloc[0]
                 
-                # Tolerância de segurança de ~50 metros
                 if ponto_mais_proximo["distancia"] < 0.0005:
                     ponto_encontrado = ponto_mais_proximo
 
@@ -287,7 +373,6 @@ with st.container():
         else:
             st.warning("👈 Clique em qualquer marcador no mapa para abrir as fotos, diagnósticos e descrições do local.")
 
-# LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -315,7 +400,6 @@ with st.container():
         st.markdown("**Clínica Ampliada e Participação**")
         st.caption("Entrevista com Lidiane Tributino e Vitor Marinho.")
 
-# LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -326,7 +410,6 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("🕐 Linha do Tempo de Atividades")
 
-    # CSS para a animação do carrossel/slideshow automático dentro do card
     st.markdown("""
         <style>
         .timeline-slider {
@@ -365,15 +448,12 @@ with st.container():
 
     cards_html = []
     for ev in eventos_timeline:
-        # Trata a lista de fotos ou fallback para foto única
         lista_fotos_raw = ev.get("fotos", [])
         if not lista_fotos_raw and ev.get("foto"):
             lista_fotos_raw = [ev["foto"]]
         
-        # Converte links do Google Drive
         fotos_convertidas = [converter_link_drive(url) for url in lista_fotos_raw]
         
-        # Lógica para montar a tag de imagem ou o container slider animado
         if len(fotos_convertidas) > 1:
             total_fotos = len(fotos_convertidas)
             imgs_html = []
@@ -386,7 +466,6 @@ with st.container():
         else:
             tag_foto = ''
 
-        # HTML do Card
         card = (
             f'<div class="timeline-card-h" style="border-top: 5px solid {ev.get("cor_borda", "#4C2059")};">'
             f'<div>'
@@ -401,7 +480,6 @@ with st.container():
 
     st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(cards_html)}</div>', unsafe_allow_html=True)
 
-# LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -421,7 +499,6 @@ with st.container():
             st.markdown("**Distribuição por Infraestrutura**")
             st.bar_chart(df_filtrado["status"].value_counts())
 
-# LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
@@ -444,15 +521,12 @@ with st.container():
         with cols_info[idx]:
             logo_path = item["logo"]
             
-            # Trata links do Google Drive
             if "drive.google.com" in logo_path:
                 img_src = converter_link_drive(logo_path)
-            # Trata arquivos locais convertendo para base64 se a função existir
             elif logo_path.startswith("./"):
                 if 'carregar_imagem_base64' in globals():
                     img_src = carregar_imagem_base64(logo_path)
                 else:
-                    # Fallback simples caso a função não tenha sido declarada no topo
                     if os.path.exists(logo_path):
                         with open(logo_path, "rb") as f:
                             dados = f.read()
