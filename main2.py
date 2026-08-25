@@ -336,31 +336,63 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. VÍDEOS (JANELA 2)
+# 3. VÍDEOS (JANELA 2 - CARROSSEL HORIZONTAL)
 # ---------------------------------------------------------
 st.markdown('<div id="videos"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("🎥 Vídeos da Comunidade")
 
-    v_col1, v_col2, v_col3 = st.columns(3)
+    # Função auxiliar para extrair o ID do vídeo do YouTube
+    def extrair_youtube_id(url):
+        match = re.search(r'(?:v=|\/live\/|\/embed\/|youtu\.be\/|\/v\/)([\w-]{11})', url)
+        return match.group(1) if match else url
 
-    with v_col1:
-        st.video("https://youtu.be/dOvOjLi99WE")
-        st.markdown("**São Rafael: Memória e Identidade**")
-        st.caption("Apresentação da comunidade São Rafael em João Pessoa.")
+    lista_videos = [
+        {
+            "url": "https://youtu.be/dOvOjLi99WE",
+            "titulo": "São Rafael: Memória e Identidade",
+            "descricao": "Apresentação da comunidade São Rafael em João Pessoa."
+        },
+        {
+            "url": "https://www.youtube.com/watch?v=1zlLovtiBd4",
+            "titulo": "Entrevista: Prof. Allef Santana",
+            "descricao": "Territorialização e dinâmicas sócio-territoriais da saúde."
+        },
+        {
+            "url": "https://www.youtube.com/watch?v=5MPQ0RQoEmw",
+            "titulo": "Clínica Ampliada e Participação",
+            "descricao": "Entrevista com Lidiane Tributino e Vitor Marinho."
+        },
+        {
+            "url": "https://www.youtube.com/watch?v=oTKGjQPs4s8&t=8s",
+            "titulo": "Entrevista: Professor Marlon Nilton",
+            "descricao": "Entrevista com docente Marlon Nilton sobre saúde e educação."
+        }
+        # Adicione novos vídeos aqui se desejar!
+    ]
 
-    with v_col2:
-        st.video("https://www.youtube.com/watch?v=1zlLovtiBd4")
-        st.markdown("**Entrevista: Prof. Allef Santana**")
-        st.caption("Territorialização e dinâmicas sócio-territoriais da saúde.")
+    # Construção dos Cards de Vídeo em HTML
+    videos_cards_html = []
+    for vid in lista_videos:
+        video_id = extrair_youtube_id(vid["url"])
+        embed_url = f"https://www.youtube.com/embed/{video_id}"
+        
+        card = (
+            f'<div class="video-card-h">'
+            f'  <div class="video-card-iframe-container">'
+            f'    <iframe src="{embed_url}" title="{vid["titulo"]}" allowfullscreen></iframe>'
+            f'  </div>'
+            f'  <div class="video-card-title">{vid["titulo"]}</div>'
+            f'  <div class="video-card-caption">{vid["descricao"]}</div>'
+            f'</div>'
+        )
+        videos_cards_html.append(card)
 
-    with v_col3:
-        st.video("https://www.youtube.com/watch?v=5MPQ0RQoEmw")
-        st.markdown("**Clínica Ampliada e Participação**")
-        st.caption("Entrevista com Lidiane Tributino e Vitor Marinho.")
+    st.markdown(f'<div class="videos-horizontal-scroll">{"".join(videos_cards_html)}</div>', unsafe_allow_html=True)
 
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+
 
 # ---------------------------------------------------------
 # 4. LINHA DO TEMPO HORIZONTAL (JANELA 3 - COM CARROSSEL)
