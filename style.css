@@ -10,9 +10,9 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 /* Oculta o header nativo transparente do Streamlit */
-[data-testid="stHeader"] {
+/* [data-testid="stHeader"] {
     display: none !important;
-}
+} */
 
 .block-container {
     padding-top: 0rem !important;
@@ -328,4 +328,54 @@ ul[role="listbox"] {
     font-size: 13px;
     color: #666;
     line-height: 1.3;
+}
+
+/* =========================================================
+   CABEÇALHO NATIVO COMPACTO E BOTÃO DA SIDEBAR REDUZIDO
+   ========================================================= */
+
+/* 1. Reduz a espessura/altura do header nativo */
+[data-testid="stHeader"] {
+    background-color: transparent !important;
+    height: 35px !important; /* Altura reduzida */
+    min-height: 35px !important;
+    z-index: 1000000 !important;
+    padding: 0 !important;
+}
+
+/* 2. Reduz o tamanho do container do botão */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stHeader"] button[aria-label="Open sidebar"],
+[data-testid="stHeader"] button[data-testid="stHeaderActionButton"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    top: 6px !important; /* Ajustado para encaixar no topo */
+    left: 8px !important;
+    z-index: 1000001 !important;
+    background-color: #f75e0c !important;
+    border-radius: 50% !important;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid #EAE6DF !important;
+    width: 26px !important;  /* Largura reduzida */
+    height: 26px !important; /* Altura reduzida */
+    min-height: 26px !important;
+    padding: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* 3. Reduz o tamanho do ícone (seta/menu) dentro do botão */
+[data-testid="stSidebarCollapsedControl"] svg,
+[data-testid="stHeader"] button svg {
+    width: 14px !important;
+    height: 14px !important;
+    fill: #f7f4f8 !important;
+    color: #4C2059 !important;
+}
+
+/* 4. Ajuste fino na margem superior do seu header roxo personalizado */
+.header-top-bar {
+    margin-top: -10px !important; /* Compensa o espaço da barra fina do Streamlit */
 }
