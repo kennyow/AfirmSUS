@@ -71,7 +71,7 @@ st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 # 1. BARRA LATERAL (Filtros de Pesquisa)
 # ---------------------------------------------------------
 
-link_drive_logo_sidebar = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
+link_drive_logo_sidebar = "https://drive.google.com/file/d/1YAMa6Ume30aX75c-p0w9BV15bWlKZkeY/view?usp=drive_link"
 logo_sidebar_url = converter_link_drive(link_drive_logo_sidebar)
 
 if logo_sidebar_url:
@@ -84,18 +84,18 @@ if logo_sidebar_url:
         unsafe_allow_html=True
     )
 
-st.sidebar.markdown(
-    """
-    <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0; opacity: 0.6;" />
+# st.sidebar.markdown(
+#     """
+#     <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0; opacity: 0.6;" />
     
-    <div style="text-align: justify; font-size: 13px; color: #555555; line-height: 1.4;">
-        O <b>AfirmaSUS</b> é o Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade para Discentes na Área da Saúde. Criado pelo Ministério da Saúde, ele financia projetos em universidades públicas para apoiar estudantes de grupos vulnerabilizados e cotistas, promovendo uma cultura antirracista e inclusiva no Sistema Único de Saúde.
-    </div>
+#     <div style="text-align: justify; font-size: 13px; color: #555555; line-height: 1.4;">
+#         O <b>AfirmaSUS</b> é o Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade para Discentes na Área da Saúde. Criado pelo Ministério da Saúde, ele financia projetos em universidades públicas para apoiar estudantes de grupos vulnerabilizados e cotistas, promovendo uma cultura antirracista e inclusiva no Sistema Único de Saúde.
+#     </div>
     
-    <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0 20px 0; opacity: 0.6;" />
-    """,
-    unsafe_allow_html=True
-)
+#     <hr style="border: none; border-top: 1px solid #FF8C00; margin: 12px 0 20px 0; opacity: 0.6;" />
+#     """,
+#     unsafe_allow_html=True
+# )
 
 st.sidebar.markdown("### Filtros de Pesquisa")
 
