@@ -56,6 +56,7 @@ header_html = textwrap.dedent(f"""
             <a class="header-nav-btn" href="#videos">Vídeos</a>
             <a class="header-nav-btn" href="#linha-do-tempo">Linha do Tempo</a>
             <a class="header-nav-btn" href="#relatorios">Relatórios</a>
+            <a class="header-nav-btn" href="#integrantes">Integrantes</a>
             <a class="header-nav-btn" href="#informacoes">Informações</a>
         </div>
     </div>
@@ -161,13 +162,11 @@ if st.sidebar.button("✨ Exibir Todas", use_container_width=True):
 
 categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
 
-# Criação de Botões em Grid Nativo do Streamlit para Garantir Funcionamento na Nuvem
 cols = st.sidebar.columns(4)
 for i, cat in enumerate(categorias_existentes):
     info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "📍"})
     col_idx = i % 4
     with cols[col_idx]:
-        # Exibe o botão de filtro com o ícone correspondente
         if st.button(info["icone"], key=f"cat_btn_{cat}", help=cat, use_container_width=True):
             st.session_state["categoria_selecionada"] = cat
             st.rerun()
@@ -192,7 +191,6 @@ if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
 st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; margin: 4px 0 4px 0; opacity: 0.6;" />', unsafe_allow_html=True)
 st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
 
-# Busca as fotos na pasta local 'Imagens' que foi commitada no seu repositório Git
 caminho_base_imagens = r"G:\.shortcut-targets-by-id\1etsHUqyiieSU_ujw74Wnk7YCxp4Td8gI\AfirmAções JampaSUS SR\AfirmaSUS\Imagens"
 
 def obter_pastas_e_imagens(caminho_raiz):
@@ -343,7 +341,6 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("🎥 Vídeos da Comunidade")
 
-    # Função auxiliar para extrair o ID do vídeo do YouTube
     def extrair_youtube_id(url):
         match = re.search(r'(?:v=|\/live\/|\/embed\/|youtu\.be\/|\/v\/)([\w-]{11})', url)
         return match.group(1) if match else url
@@ -369,10 +366,8 @@ with st.container():
             "titulo": "Entrevista: Professor Marlon Nilton",
             "descricao": "Entrevista com docente Marlon Nilton sobre saúde e educação."
         }
-        # Adicione novos vídeos aqui se desejar!
     ]
 
-    # Construção dos Cards de Vídeo em HTML
     videos_cards_html = []
     for vid in lista_videos:
         video_id = extrair_youtube_id(vid["url"])
@@ -391,8 +386,7 @@ with st.container():
 
     st.markdown(f'<div class="videos-horizontal-scroll">{"".join(videos_cards_html)}</div>', unsafe_allow_html=True)
 
-
-
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
 # 4. LINHA DO TEMPO HORIZONTAL (JANELA 3 - COM CARROSSEL)
@@ -494,7 +488,52 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. INFORMAÇÕES E PLATAFORMAS (JANELA 5)
+# 6. INTEGRANTES (JANELA 5 - CARROSSEL HORIZONTAL)
+# ---------------------------------------------------------
+st.markdown('<div id="integrantes"></div>', unsafe_allow_html=True)
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    st.subheader("👥 Integrantes do Projeto")
+
+    caminho_integrantes = "integrantes.json"
+    lista_integrantes = []
+
+    # Carrega os dados diretamente do arquivo JSON local
+    if os.path.exists(caminho_integrantes):
+        try:
+            with open(caminho_integrantes, "r", encoding="utf-8") as f:
+                lista_integrantes = json.load(f)
+        except Exception as e:
+            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_integrantes}': {e}")
+    else:
+        st.warning(f"⚠️ Arquivo '{caminho_integrantes}' não encontrado no diretório do projeto.")
+
+    if lista_integrantes:
+        integrantes_cards_html = []
+        for intg in lista_integrantes:
+            # Trata o link do Google Drive se necessário
+            foto_url = converter_link_drive(intg.get("foto", ""))
+            
+            # Pega a situação (Bolsista, Voluntário, etc.) se existir no JSON
+            situacao_texto = intg.get("situacao", "")
+            html_situacao = f'<div class="timeline-desc-h" style="font-size: 12px; color: #777; margin-top: 2px;">{situacao_texto}</div>' if situacao_texto else ''
+
+            card = (
+                f'<div class="timeline-card-h" style="border-top: 5px solid #FF8C00; display: flex; flex-direction: column; align-items: center; text-align: center;">'
+                f'  <div style="width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; border-radius: 6px; margin-bottom: 12px; overflow: hidden;">'
+                f'      <img src="{foto_url}" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" />'
+                f'  </div>'
+                f'  <div class="timeline-title-h"><b>{intg.get("nome", "")}</b></div>'
+                f'  <div class="timeline-desc-h" style="font-weight: normal; color: #555;">{intg.get("curso", "")}</div>'
+                f'  {html_situacao}'
+                f'</div>'
+            )
+            integrantes_cards_html.append(card)
+
+        st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(integrantes_cards_html)}</div>', unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# 7. INFORMAÇÕES E PLATAFORMAS (JANELA 6)
 # ---------------------------------------------------------
 st.markdown('<div id="informacoes"></div>', unsafe_allow_html=True)
 with st.container():
