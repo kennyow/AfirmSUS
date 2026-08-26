@@ -45,7 +45,7 @@ logo_url = converter_link_drive(link_drive_logo)
 tag_logo_html = f'<img src="{logo_url}" class="header-logo" alt="Logo AfirmaSUS">' if logo_url else ''
 
 header_html = textwrap.dedent(f"""
-    <div class="header-top-bar" id="territorio">
+    <div class="header-top-bar" id="apresentacao">
         <div class="header-brand">
             {tag_logo_html}
             <h1 class="header-title">AfirmaSUS–JP</h1>
@@ -253,7 +253,54 @@ else:
     st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos. Verifique se a pasta 'Imagens' está no repositório.")
 
 # ---------------------------------------------------------
-# 2. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
+# 2. APRESENTAÇÃO DO PROJETO
+# ---------------------------------------------------------
+st.markdown('<div id="apresentacao"></div>', unsafe_allow_html=True)
+
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    col_apresentacao_foto, col_apresentacao_info = st.columns([2.2, 1])
+
+    # Insira aqui o link da foto principal da apresentação
+    link_drive_foto_apresentacao = "https://drive.google.com/file/d/1j_QpGHebcgPtjljMtI5iZwxLLOeFZML8/view?usp=drive_link" 
+    # Insira aqui o link da logo para a apresentação
+    link_drive_logo_apresentacao = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
+
+    url_foto_apresentacao = converter_link_drive(link_drive_foto_apresentacao)
+    url_logo_apresentacao = converter_link_drive(link_drive_logo_apresentacao)
+
+    with col_apresentacao_foto:
+        st.subheader("📌 Apresentação")
+        if url_foto_apresentacao:
+            st.image(url_foto_apresentacao, use_container_width=True, caption="Projeto AfirmaSUS - João Pessoa/PB")
+        else:
+            st.info("Espaço reservado para a imagem de apresentação.")
+
+    with col_apresentacao_info:
+        st.subheader("ℹ️ Sobre o Projeto")
+        if url_logo_apresentacao:
+            st.markdown(
+                f'''
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <img src="{url_logo_apresentacao}" style="max-width: 80%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
+                </div>
+                ''',
+                unsafe_allow_html=True
+            )
+        
+        st.markdown(
+            """
+            <div style="text-align: justify; font-size: 14px; color: #444444; line-height: 1.6;">
+                O <b>AfirmaSUS</b> é o Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade para Discentes na Área da Saúde. Criado pelo Ministério da Saúde, ele financia projetos em universidades públicas para apoiar estudantes de grupos vulnerabilizados e cotistas, promovendo uma cultura antirracista e inclusiva no Sistema Único de Saúde.
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+# ---------------------------------------------------------
+# 3. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
 # ---------------------------------------------------------
 st.markdown('<div id="territorio"></div>', unsafe_allow_html=True)
 
@@ -319,7 +366,7 @@ with st.container():
         if ponto_encontrado is not None:
             if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
                 foto_url = converter_link_drive(ponto_encontrado["foto"])
-                st.image(foto_url, width='stretch', caption=ponto_encontrado.get("nome", "Local"))
+                st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
             
             st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
             st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
@@ -334,7 +381,7 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 3. VÍDEOS (JANELA 2 - CARROSSEL HORIZONTAL)
+# 4. VÍDEOS (JANELA 2 - CARROSSEL HORIZONTAL)
 # ---------------------------------------------------------
 st.markdown('<div id="videos"></div>', unsafe_allow_html=True)
 with st.container():
@@ -389,7 +436,7 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 4. LINHA DO TEMPO HORIZONTAL (JANELA 3 - COM CARROSSEL)
+# 5. LINHA DO TEMPO HORIZONTAL (JANELA 3 - COM CARROSSEL)
 # ---------------------------------------------------------
 st.markdown('<div id="linha-do-tempo"></div>', unsafe_allow_html=True)
 with st.container():
@@ -469,7 +516,7 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 5. INDICADORES (JANELA 4)
+# 6. INDICADORES (JANELA 4)
 # ---------------------------------------------------------
 st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True)
 with st.container():
@@ -488,7 +535,7 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 6. INTEGRANTES (JANELA 5 - CARROSSEL HORIZONTAL)
+# 7. INTEGRANTES (JANELA 5 - CARROSSEL HORIZONTAL)
 # ---------------------------------------------------------
 st.markdown('<div id="integrantes"></div>', unsafe_allow_html=True)
 with st.container():
@@ -533,7 +580,7 @@ with st.container():
         st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(integrantes_cards_html)}</div>', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
-# 7. INFORMAÇÕES E PLATAFORMAS (JANELA 6)
+# 8. INFORMAÇÕES E PLATAFORMAS (JANELA 6)
 # ---------------------------------------------------------
 st.markdown('<div id="informacoes"></div>', unsafe_allow_html=True)
 with st.container():
