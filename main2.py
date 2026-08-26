@@ -261,9 +261,8 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     col_apresentacao_foto, col_apresentacao_info = st.columns([2.2, 1])
 
-    # Insira aqui o link da foto principal da apresentação
-    link_drive_foto_apresentacao = "https://drive.google.com/file/d/1j_QpGHebcgPtjljMtI5iZwxLLOeFZML8/view?usp=drive_link" 
-    # Insira aqui o link da logo para a apresentação
+    # Insira os links do Google Drive aqui
+    link_drive_foto_apresentacao = "https://drive.google.com/file/d/1Ebu5KMqcD0qWbOpz80I1cERKx7z7RPoM/view?usp=drive_link" 
     link_drive_logo_apresentacao = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
 
     url_foto_apresentacao = converter_link_drive(link_drive_foto_apresentacao)
@@ -272,7 +271,15 @@ with st.container():
     with col_apresentacao_foto:
         st.subheader("📌 Apresentação")
         if url_foto_apresentacao:
-            st.image(url_foto_apresentacao, use_container_width=True, caption="Projeto AfirmaSUS - João Pessoa/PB")
+            # Container HTML para aplicar o enquadramento horizontal fixo
+            st.markdown(
+                f'''
+                <div class="apresentacao-foto-container">
+                    <img src="{url_foto_apresentacao}" alt="Foto de Apresentação" />
+                </div>
+                ''',
+                unsafe_allow_html=True
+            )
         else:
             st.info("Espaço reservado para a imagem de apresentação.")
 
@@ -281,8 +288,8 @@ with st.container():
         if url_logo_apresentacao:
             st.markdown(
                 f'''
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <img src="{url_logo_apresentacao}" style="max-width: 80%; height: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <img src="{url_logo_apresentacao}" style="max-height: 270px; width: auto; object-fit: contain;" alt="Logo AfirmaSUS" />
                 </div>
                 ''',
                 unsafe_allow_html=True
@@ -290,7 +297,7 @@ with st.container():
         
         st.markdown(
             """
-            <div style="text-align: justify; font-size: 14px; color: #444444; line-height: 1.6;">
+            <div style="text-align: justify; font-size: 13.5px; color: #444444; line-height: 1.5;">
                 O <b>AfirmaSUS</b> é o Programa Nacional de Apoio à Permanência, Diversidade e Visibilidade para Discentes na Área da Saúde. Criado pelo Ministério da Saúde, ele financia projetos em universidades públicas para apoiar estudantes de grupos vulnerabilizados e cotistas, promovendo uma cultura antirracista e inclusiva no Sistema Único de Saúde.
             </div>
             """,
