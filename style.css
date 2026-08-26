@@ -379,3 +379,30 @@ ul[role="listbox"] {
 .header-top-bar {
     margin-top: -10px !important; /* Compensa o espaço da barra fina do Streamlit */
 }
+
+/* 1. Limita a altura da foto da Apresentação e mantém proporção horizontal */
+.apresentacao-foto-container img {
+    width: 100%;
+    max-height: 350px; /* Reduza ou aumente esse valor conforme desejar */
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* 2. Reduz o espaçamento vertical entre as seções */
+hr.section-divider {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+div.floating-window {
+    margin-top: 5px !important;
+    margin-bottom: 5px !important;
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+/* Reduz margens padrão do Streamlit entre blocos */
+.stMainBlockContainer {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+}
