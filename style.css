@@ -406,3 +406,11 @@ div.floating-window {
     padding-top: 1rem !important;
     padding-bottom: 1rem !important;
 }
+
+/*Card das Formações*/
+.formacao-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+}

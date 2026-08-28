@@ -517,6 +517,44 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 # ---------------------------------------------------------
+# FORMAÇÕES REALIZADAS (CARROSSEL HORIZONTAL)
+# ---------------------------------------------------------
+st.markdown('<div id="formacoes"></div>', unsafe_allow_html=True)
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    st.subheader("🎓 Formações Realizadas")
+
+    caminho_formacoes = "formacoes.json"
+    lista_formacoes = []
+
+    if os.path.exists(caminho_formacoes):
+        try:
+            with open(caminho_formacoes, "r", encoding="utf-8") as f:
+                lista_formacoes = json.load(f)
+        except Exception as e:
+            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_formacoes}': {e}")
+    else:
+        st.warning(f"⚠️ Arquivo '{caminho_formacoes}' não encontrado no diretório do projeto.")
+
+    if lista_formacoes:
+        formacoes_cards_html = []
+        for item in lista_formacoes:
+            foto_url = converter_link_drive(item.get("foto", ""))
+            
+            # Card com dimensões idênticas às de Integrantes, porém contendo apenas a imagem
+            card = (
+                f'<div class="timeline-card-h" style="border-top: 5px solid #FF8C00; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">'
+                f'  <img src="{foto_url}" alt="{item.get("titulo", "Formação")}" class="formacao-card-img" style="width: 100%; height: 100%; object-fit: cover;" />'
+                f'</div>'
+            )
+            formacoes_cards_html.append(card)
+
+        st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(formacoes_cards_html)}</div>', unsafe_allow_html=True)
+
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------
 # 6. INDICADORES (JANELA 4)
 # ---------------------------------------------------------
 st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True)
