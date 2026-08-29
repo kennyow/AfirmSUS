@@ -42,6 +42,56 @@
     "borderColor": "#4C2059",
     "textColor": "#ffffff",
     "description": "Mais um dia sem bolsa."
+  },
+ 
+  {
+    "title": "Finalização dos Slides da Apresentação Nacional",
+    "start": "2026-08-18",
+    "end": "2026-08-18",
+    "backgroundColor": "#F05763",
+    "borderColor": "#4C2059",
+    "textColor": "#ffffff",
+    "description": "Thayane, Kennyo, Alex."
+  },
+ 
+  {
+    "title": "Consulta de ingresso de novos estudantes",
+    "start": "2026-08-31",
+    "end": "2026-08-31",
+    "backgroundColor": "#F05763",
+    "borderColor": "#4C2059",
+    "textColor": "#ffffff",
+    "description": "Alex: Enviar Google Forms para os estudantes aprovados na seleção para saber se querem ser voluntários."
+  },
+ 
+  {
+    "title": "Realização de Cursos Complementares",
+    "start": "2026-08-31",
+    "end": "2026-08-31",
+    "backgroundColor": "#4C2059",
+    "borderColor": "#4C2059",
+    "textColor": "#ffffff",
+    "description": "Correspondente a carga horária do recesso. Plataforma AVASUS, FioCRUZ. Certificado comprovará as horas."
+  },
+ 
+  {
+    "title": "Conclusão dos Relatórios dos Subgrupos do 1º Encontro Comunitário de Saúde",
+    "start": "2026-09-07",
+    "end": "2026-09-07",
+    "backgroundColor": "#F05763",
+    "borderColor": "#4C2059",
+    "textColor": "#ffffff",
+    "description": "Myrela, Álvaro e Alex."
+  },
+ 
+  {
+    "title": "Documentário Grupo Viva Vida",
+    "start": "2026-08-31",
+    "end": "2026-08-31",
+    "backgroundColor": "#FF8C00",
+    "borderColor": "#4C2059",
+    "textColor": "#ffffff",
+    "description": "Início da Produção. Convocação de parceiros do grupo."
   }
   
 ]
