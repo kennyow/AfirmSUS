@@ -554,24 +554,132 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
+import plotly.express as px
+
 # ---------------------------------------------------------
-# 6. INDICADORES (JANELA 4)
+# 6. INDICADORES DE SAÚDE MENTAL E MAPEAMENTO (JANELA 4)
 # ---------------------------------------------------------
 st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
-    st.subheader("📊 Indicadores do Mapeamento")
+    st.subheader("📊 Indicadores do Mapeamento de Saúde Mental")
 
-    if not df_filtrado.empty:
-        g_col1, g_col2 = st.columns(2)
-        with g_col1:
-            st.markdown("**Pontos por Distrito**")
-            st.bar_chart(df_filtrado["distrito"].value_counts())
-        with g_col2:
-            st.markdown("**Distribuição por Infraestrutura**")
-            st.bar_chart(df_filtrado["status"].value_counts())
+    caminho_csv = "mental_health.csv"
+    
+    if os.path.exists(caminho_csv):
+        df_mh = pd.read_csv(caminho_csv)
+        total_pessoas = len(df_mh)
 
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+        # -----------------------------------------------------
+        # 1. CARDS QUANTITATIVOS (MÉTRICAS RESUMIDAS)
+        # -----------------------------------------------------
+        st.markdown("**📌 Prevalência de Condições Clínicas**")
+        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+
+        dep_pct = (df_mh["Depression"].sum() / total_pessoas) * 100
+        anx_pct = (df_mh["Anxiety"].sum() / total_pessoas) * 100
+        burn_pct = (df_mh["Burnout"].sum() / total_pessoas) * 100
+        estresse_medio = df_mh["Stress_Level"].mean()
+
+        with m_col1:
+            st.metric(label="Depressão", value=f"{dep_pct:.1f}%", delta=f"{df_mh['Depression'].sum()} pessoas")
+        with m_col2:
+            st.metric(label="Ansiedade", value=f"{anx_pct:.1f}%", delta=f"{df_mh['Anxiety'].sum()} pessoas")
+        with m_col3:
+            st.metric(label="Burnout", value=f"{burn_pct:.1f}%", delta=f"{df_mh['Burnout'].sum()} pessoas")
+        with m_col4:
+            st.metric(label="Estresse Médio", value=f"{estresse_medio:.2f} / 10")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # -----------------------------------------------------
+        # 2. GRÁFICOS DIVERSIFICADOS (LINHA, SCATTER, HISTOGRAMA)
+        # -----------------------------------------------------
+        col_esq, col_dir = st.columns(2)
+
+        # A) GRÁFICO DE LINHA: Estresse Médio por Faixa Etária
+        with col_esq:
+            st.markdown("**📈 Evolução do Nível de Estresse por Faixa Etária**")
+            
+            # Criação dos grupos de idade
+            bins = [15, 25, 35, 45, 55, 65]
+            labels = ["16-25 anos", "26-35 anos", "36-45 anos", "46-55 anos", "56-65 anos"]
+            df_mh["Faixa_Etaria"] = pd.cut(df_mh["Age"], bins=bins, labels=labels)
+            
+            df_linha = df_mh.groupby("Faixa_Etaria", observed=False)["Stress_Level"].mean().reset_index()
+            
+            fig_linha = px.line(
+                df_linha, 
+                x="Faixa_Etaria", 
+                y="Stress_Level", 
+                markers=True,
+                labels={"Faixa_Etaria": "Faixa Etária", "Stress_Level": "Estresse Médio (1-10)"},
+                color_discrete_sequence=["#FF8C00"]
+            )
+            fig_linha.update_layout(height=320, margin=dict(l=20, r=20, t=20, b=20))
+            st.plotly_chart(fig_linha, use_container_width=True)
+
+        # B) HISTOGRAMA: Distribuição das Horas de Estudo/Trabalho
+        with col_dir:
+            st.markdown("**📊 Distribuição de Horas Diárias de Estudo / Trabalho**")
+            
+            fig_hist = px.histogram(
+                df_mh, 
+                x="Work_Study_Hours", 
+                nbins=12,
+                labels={"Work_Study_Hours": "Horas por Dia"},
+                color_discrete_sequence=["#856eaf"]
+            )
+            fig_hist.update_layout(
+                yaxis_title="Quantidade de Pessoas", 
+                height=320, 
+                margin=dict(l=20, r=20, t=20, b=20)
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)
+
+        # C) BARRAS EMPILHADAS: Faixas de Horas de Sono vs. Prevalência de Burnout
+        st.markdown("**💤 Relação entre Qualidade do Sono e Incidência de Burnout**")
+
+        # Agrupamento das horas de sono em faixas claras
+        bins_sono = [0, 5, 7, 12]
+        labels_sono = ["< 5h (Privação)", "5-7h (Adequado)", "> 7h (Elevado)"]
+        df_mh["Faixa_Sono"] = pd.cut(df_mh["Sleep_Hours"], bins=bins_sono, labels=labels_sono)
+
+        # Mapeamento do status de Burnout para rótulos legíveis
+        df_mh["Status_Burnout"] = df_mh["Burnout"].map({1: "Com Burnout", 0: "Sem Burnout"})
+
+        # Cálculo percentual por faixa de sono
+        df_sono_burnout = (
+            pd.crosstab(df_mh["Faixa_Sono"], df_mh["Status_Burnout"], normalize="index") * 100
+        ).reset_index()
+
+        # Transformação para formato longo adequado ao Plotly
+        df_sono_melted = df_sono_burnout.melt(
+            id_vars="Faixa_Sono", 
+            var_name="Status", 
+            value_name="Porcentagem"
+        )
+
+        fig_sono = px.bar(
+            df_sono_melted,
+            x="Faixa_Sono",
+            y="Porcentagem",
+            color="Status",
+            text=df_sono_melted["Porcentagem"].round(1).astype(str) + "%",
+            labels={"Faixa_Sono": "Horas de Sono por Noite", "Porcentagem": "Proporção (%)"},
+            color_discrete_map={"Com Burnout": "#DC3545", "Sem Burnout": "#28A745"}
+        )
+
+        fig_sono.update_layout(
+            barmode="stack",
+            height=380,
+            margin=dict(l=20, r=20, t=20, b=20),
+            legend_title_text="Diagnóstico"
+        )
+
+        st.plotly_chart(fig_sono, use_container_width=True)
+    else:
+        st.warning(f"⚠️ O arquivo '{caminho_csv}' não foi encontrado no diretório do projeto.")
 
 # ---------------------------------------------------------
 # APRESENTAÇÕES CANVA (CARROSSEL HORIZONTAL)
