@@ -318,7 +318,7 @@ with st.container():
         st.subheader("📍 Territorialização")
         st.info(f"Mostrando {len(df_filtrado)} local(is)")
         
-        mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="CartoDB voyager")
+        mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="OpenStreetMap") #CartoDB voyager
         
         for idx, row in df_filtrado.iterrows():
             if pd.isna(row["lat"]) or pd.isna(row["lon"]):
