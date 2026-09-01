@@ -150,7 +150,7 @@ else:
 
 st.sidebar.markdown("**Categorias**")
 
-if st.sidebar.button("✨ Exibir Todas", use_container_width=True):
+if st.sidebar.button("✨ Exibir Todas", width='stretch'):
     st.session_state["categoria_selecionada"] = "Todas"
     st.rerun()
 
@@ -161,7 +161,7 @@ for i, cat in enumerate(categorias_existentes):
     info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "📍"})
     col_idx = i % 4
     with cols[col_idx]:
-        if st.button(info["icone"], key=f"cat_btn_{cat}", help=cat, use_container_width=True):
+        if st.button(info["icone"], key=f"cat_btn_{cat}", help=cat, width='stretch'):
             st.session_state["categoria_selecionada"] = cat
             st.rerun()
 
@@ -808,7 +808,37 @@ with st.container():
         evento_clicado = state["eventClick"]["event"]
         exibir_modal_evento(evento_clicado)
 
+
+    st.markdown("### 📋 Escala de Trabalho Semanal")
+
+    # Dados iniciais da escala
+    dados_escala = {
+        "Turno": ["Manhã", "Tarde"],
+        "Segunda": ["Thayane - Mailson", "Lucas - Jéssica - Alex"],
+        "Terça": ["Kennyo - Gabi", "Ûgor - Laura"],
+        "Quarta": ["Jéssica - Alex - Thayane - Emily", ""],
+        "Quinta": ["Kennyo - Gabi - Myrela - Kayllane", "Lucas - Emily - Kayllane"],
+        "Sexta": ["Álvaro - Mailson", "Myrela - Álvaro - Ûgor"],
+    }
+
+    df_escala = pd.DataFrame(dados_escala)
+
+    # Tabela editável
+    escala_editada = st.data_editor(
+        df_escala,
+        num_rows="fixed",
+        use_container_width=True,
+        hide_index=True,
+        key="editor_escala_semanal",
+    )
+
+    # Botão opcional para salvar as alterações em arquivo JSON
+    if st.button("💾 Salvar Escala"):
+        escala_editada.to_json("escala_trabalho.json", orient="records", force_ascii=False)
+        st.success("Escala atualizada com sucesso!")
+
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # 7. INTEGRANTES (JANELA 5 - CARROSSEL HORIZONTAL)
