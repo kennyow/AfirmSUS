@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "nome": "Setor Norte (Verde)",
+    "cor": "green",
+    "status": "concluido",
+    "descricao": "Ação de saúde realizada e concluída no setor Norte.",
+    "centroide": [-7.1332, -34.8548],
+    "vertices": [
+      [-7.1325, -34.8542],
+      [-7.1332, -34.8546],
+      [-7.1340, -34.8552],
+      [-7.1336, -34.8555]
+    ]
+  },
+  {
+    "id": 2,
+    "nome": "Setor Centro (Vermelho)",
+    "cor": "red",
+    "status": "pendente",
+    "descricao": "Ação de saúde pendente/em andamento no setor Centro.",
+    "centroide": [-7.1348, -34.8562],
+    "vertices": [
+      [-7.1340, -34.8552],
+      [-7.1348, -34.8560],
+      [-7.1353, -34.8570],
+      [-7.1346, -34.8566]
+    ]
+  },
+  {
+    "id": 3,
+    "nome": "Setor Sul (Azul)",
+    "cor": "blue",
+    "status": "concluido",
+    "descricao": "Ação de saúde realizada e concluída no setor Sul.",
+    "centroide": [-7.1355, -34.8558],
+    "vertices": [
+      [-7.1348, -34.8560],
+      [-7.1356, -34.8552],
+      [-7.1362, -34.8555],
+      [-7.1353, -34.8570]
+    ]
+  }
+]
