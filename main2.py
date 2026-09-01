@@ -562,7 +562,7 @@ import plotly.express as px
 st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
-    st.subheader("📊 Indicadores do Mapeamento de Saúde Mental")
+    st.subheader("📊 Indicadores de Processos de Trabalho e Formação")
 
     caminho_csv = "mental_health.csv"
     
