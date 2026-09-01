@@ -10,6 +10,11 @@ import os
 import re
 import textwrap
 import base64
+import plotly.express as px
+
+# ---------------------------------------------------------
+# 1. FUNÇÕES AUXILIARES E CONFIGURAÇÕES INICIAIS
+# ---------------------------------------------------------
 
 # Função auxiliar para tratar URLs do Google Drive
 def converter_link_drive(url):
@@ -37,17 +42,47 @@ def carregar_css(caminho_arquivo):
 
 carregar_css("style.css")
 
+
 # ---------------------------------------------------------
-# BARRA SUPERIOR ROXA (COM LOGO)
+# 2. CARREGAMENTO INICIAL DA BASE DE DADOS (GLOBAL)
+# ---------------------------------------------------------
+caminho_json = "dados_locais.json"
+df_locais = pd.DataFrame()
+
+if os.path.exists(caminho_json):
+    try:
+        with open(caminho_json, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+        if isinstance(dados, list) and len(dados) > 0:
+            df_locais = pd.DataFrame(dados)
+            df_locais.columns = df_locais.columns.astype(str).str.strip().str.lower()
+
+            colunas_necessarias = ['distrito', 'categoria', 'nome', 'lat', 'lon', 'status', 'cor', 'icone', 'foto', 'descricao']
+            for col_necessaria in colunas_necessarias:
+                if col_necessaria not in df_locais.columns:
+                    for col_existente in list(df_locais.columns):
+                        if col_necessaria.lower() in col_existente.lower() or col_existente.lower() in col_necessaria.lower():
+                            df_locais.rename(columns={col_existente: col_necessaria}, inplace=True)
+                            break
+
+            if 'lat' in df_locais.columns:
+                df_locais['lat'] = pd.to_numeric(df_locais['lat'], errors='coerce')
+            if 'lon' in df_locais.columns:
+                df_locais['lon'] = pd.to_numeric(df_locais['lon'], errors='coerce')
+
+            df_locais = df_locais.dropna(subset=['lat', 'lon'])
+    except Exception as e:
+        st.error(f"⚠️ Erro ao carregar a base de dados '{caminho_json}': {e}")
+
+
+# ---------------------------------------------------------
+# 3. BARRA SUPERIOR (HEADER)
 # ---------------------------------------------------------
 link_drive_logo = "https://drive.google.com/file/d/1YAMa6Ume30aX75c-p0w9BV15bWlKZkeY/view?usp=drive_link"
 logo_url = converter_link_drive(link_drive_logo)
 
 tag_logo_html = f'<img src="{logo_url}" class="header-logo" alt="Logo AfirmaSUS">' if logo_url else ''
 
-# ---------------------------------------------------------
-# BARRA SUPERIOR ROXA (SEM LOGO)
-# ---------------------------------------------------------
 header_html = textwrap.dedent("""
     <div class="header-top-bar" id="apresentacao">
         <div class="header-brand">
@@ -67,15 +102,13 @@ header_html = textwrap.dedent("""
 
 st.markdown(header_html, unsafe_allow_html=True)
 
-
-
 # LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# 1. BARRA LATERAL (Filtros de Pesquisa)
-# ---------------------------------------------------------
 
+# ---------------------------------------------------------
+# 4. BARRA LATERAL (FILTROS DE PESQUISA E GALERIA)
+# ---------------------------------------------------------
 link_drive_logo_sidebar = "https://drive.google.com/file/d/1Cj16wbR1lr1W9BFhbn-tZp9kC5f2QGeT/view?usp=drive_link"
 logo_sidebar_url = converter_link_drive(link_drive_logo_sidebar)
 
@@ -89,99 +122,103 @@ if logo_sidebar_url:
         unsafe_allow_html=True
     )
 
+st.sidebar.markdown("### 🗺️ Mapeamento e Camadas")
 
+opcoes_camadas = [
+    "📍 Territorialização (AfirmaSUS)",
+    "🩺 Encontro de Saúde (Setores)",
+    "🚧 Novo Filtro 3 (Em breve)"
+]
 
-st.sidebar.markdown("### Filtros de Pesquisa")
+camada_selecionada = st.sidebar.selectbox(
+    "Selecione a Camada do Mapa",
+    opcoes_camadas,
+    help="Escolha qual conjunto de dados você deseja visualizar no mapa."
+)
 
-caminho_json = "dados_locais.json"
-if not os.path.exists(caminho_json):
-    st.error(f"Arquivo '{caminho_json}' não encontrado na pasta do projeto.")
-    st.stop()
+st.sidebar.markdown("---")
 
-df_locais = pd.DataFrame()
-try:
-    with open(caminho_json, "r", encoding="utf-8") as f:
-        dados = json.load(f)
-    if isinstance(dados, list) and len(dados) > 0:
-        df_locais = pd.DataFrame(dados)
-except Exception as e:
-    st.error(f"⚠️ Erro ao carregar a base de dados: {e}")
-    st.stop()
+df_filtrado = pd.DataFrame()
+poligonos_encontro = []
 
-if df_locais.empty:
-    st.error("⚠️ O DataFrame está vazio! Verifique o arquivo JSON.")
-    st.stop()
+# LÓGICA DA CAMADA: TERRITORIALIZAÇÃO
+if camada_selecionada == "📍 Territorialização (AfirmaSUS)":
+    st.sidebar.markdown("### Filtros da Territorialização")
+    
+    if df_locais.empty:
+        st.sidebar.error("⚠️ Nenhum dado de territorialização encontrado em 'dados_locais.json'.")
+    else:
+        if "categoria_selecionada" not in st.session_state:
+            st.session_state["categoria_selecionada"] = "Todas"
 
-df_locais.columns = df_locais.columns.astype(str).str.strip().str.lower()
+        MAPA_CATEGORIAS = {
+            "Esporte e Lazer": {"cor": "#FF8C00", "icone": "🏃"},
+            "Saúde":           {"cor": "#28A745", "icone": "🩺"},
+            "Educação":        {"cor": "#856eaf", "icone": "🎓"},
+            "Religião":        {"cor": "#7BDCEB", "icone": "️⛪"},
+            "Cultura":         {"cor": "#D1C7A5", "icone": "🏛️"},
+            "Comércio":        {"cor": "#DC3545", "icone": "🛒"},
+            "Administrativo":  {"cor": "#CF68E3", "icone": "💼"}
+        }
 
-colunas_necessarias = ['distrito', 'categoria', 'nome', 'lat', 'lon', 'status', 'cor', 'icone', 'foto', 'descricao']
-for col_necessaria in colunas_necessarias:
-    if col_necessaria not in df_locais.columns:
-        for col_existente in list(df_locais.columns):
-            if col_necessaria.lower() in col_existente.lower() or col_existente.lower() in col_necessaria.lower():
-                df_locais.rename(columns={col_existente: col_necessaria}, inplace=True)
-                break
+        if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
+            distritos_disponiveis = ["Todos"] + sorted(list(df_locais["distrito"].dropna().unique()))
+            distrito_selecionado = st.sidebar.selectbox("Distrito Sanitário", distritos_disponiveis)
+        else:
+            distrito_selecionado = "Todos"
 
-if 'lat' in df_locais.columns:
-    df_locais['lat'] = pd.to_numeric(df_locais['lat'], errors='coerce')
-if 'lon' in df_locais.columns:
-    df_locais['lon'] = pd.to_numeric(df_locais['lon'], errors='coerce')
+        st.sidebar.markdown("**Categorias**")
 
-df_locais = df_locais.dropna(subset=['lat', 'lon'])
-
-if "categoria_selecionada" not in st.session_state:
-    st.session_state["categoria_selecionada"] = "Todas"
-
-MAPA_CATEGORIAS = {
-    "Esporte e Lazer": {"cor": "#FF8C00", "icone": "🏃"},
-    "Saúde":           {"cor": "#28A745", "icone": "🩺"},
-    "Educação":        {"cor": "#856eaf", "icone": "🎓"},
-    "Religião":        {"cor": "#7BDCEB", "icone": "️⛪"},
-    "Cultura":         {"cor": "#D1C7A5", "icone": "🏛️"},
-    "Comércio":        {"cor": "#DC3545", "icone": "🛒"},
-    "Administrativo":  {"cor": "#CF68E3", "icone": "💼"}
-}
-
-if 'distrito' in df_locais.columns and not df_locais['distrito'].isna().all():
-    distritos_disponiveis = ["Todos"] + sorted(list(df_locais["distrito"].dropna().unique()))
-    distrito_selecionado = st.sidebar.selectbox("Distrito Sanitário", distritos_disponiveis)
-else:
-    distrito_selecionado = "Todos"
-
-st.sidebar.markdown("**Categorias**")
-
-if st.sidebar.button("✨ Exibir Todas", width='stretch'):
-    st.session_state["categoria_selecionada"] = "Todas"
-    st.rerun()
-
-categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
-
-cols = st.sidebar.columns(4)
-for i, cat in enumerate(categorias_existentes):
-    info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "📍"})
-    col_idx = i % 4
-    with cols[col_idx]:
-        if st.button(info["icone"], key=f"cat_btn_{cat}", help=cat, width='stretch'):
-            st.session_state["categoria_selecionada"] = cat
+        if st.sidebar.button("✨ Exibir Todas", width="stretch"):
+            st.session_state["categoria_selecionada"] = "Todas"
             st.rerun()
 
-if st.session_state["categoria_selecionada"] != "Todas":
-    st.sidebar.info(f"Filtro ativo: **{st.session_state['categoria_selecionada']}**")
+        categorias_existentes = sorted(list(df_locais["categoria"].dropna().unique())) if 'categoria' in df_locais.columns else []
 
-# ---------------------------------------------------------
-# APLICAÇÃO DOS FILTROS NO DATAFRAME
-# ---------------------------------------------------------
-categoria_selecionada = st.session_state["categoria_selecionada"]
+        cols = st.sidebar.columns(4)
+        for i, cat in enumerate(categorias_existentes):
+            info = MAPA_CATEGORIAS.get(cat, {"cor": "#6c757d", "icone": "📍"})
+            col_idx = i % 4
+            with cols[col_idx]:
+                if st.button(info["icone"], key=f"cat_btn_{cat}", help=cat, width="stretch"):
+                    st.session_state["categoria_selecionada"] = cat
+                    st.rerun()
 
-df_filtrado = df_locais.copy()
-if distrito_selecionado != "Todos" and 'distrito' in df_filtrado.columns:
-    df_filtrado = df_filtrado[df_filtrado["distrito"] == distrito_selecionado]
-if categoria_selecionada != "Todas" and 'categoria' in df_filtrado.columns:
-    df_filtrado = df_filtrado[df_filtrado["categoria"] == categoria_selecionada]
+        if st.session_state["categoria_selecionada"] != "Todas":
+            st.sidebar.info(f"Filtro ativo: **{st.session_state['categoria_selecionada']}**")
 
-# ---------------------------------------------------------
+        # Filtragem dos Dados
+        df_filtrado = df_locais.copy()
+        if distrito_selecionado != "Todos" and 'distrito' in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado["distrito"] == distrito_selecionado]
+        if st.session_state["categoria_selecionada"] != "Todas" and 'categoria' in df_filtrado.columns:
+            df_filtrado = df_filtrado[df_filtrado["categoria"] == st.session_state["categoria_selecionada"]]
+
+# LÓGICA DA CAMADA: ENCONTRO DE SAÚDE
+elif camada_selecionada == "🩺 Encontro de Saúde (Setores)":
+    st.sidebar.markdown("### 🩺 Filtro: Encontro de Saúde")
+    
+    caminho_encontro = "encontrodesaude.json"
+    if os.path.exists(caminho_encontro):
+        try:
+            with open(caminho_encontro, "r", encoding="utf-8") as f:
+                poligonos_encontro = json.load(f)
+            
+            status_opcao = st.sidebar.radio("Filtrar por Situação:", ["Todos", "✅ Concluídos", "❌ Pendentes"])
+            
+            if status_opcao == "✅ Concluídos":
+                poligonos_encontro = [p for p in poligonos_encontro if p.get("status") == "concluido"]
+            elif status_opcao == "❌ Pendentes":
+                poligonos_encontro = [p for p in poligonos_encontro if p.get("status") == "pendente"]
+                
+            st.sidebar.success(f"{len(poligonos_encontro)} setor(es) exibido(s).")
+            
+        except Exception as e:
+            st.sidebar.error(f"Erro ao ler '{caminho_encontro}': {e}")
+    else:
+        st.sidebar.warning(f"Arquivo '{caminho_encontro}' não encontrado.")
+
 # FILTRO DE GALERIA DE FOTOS NA BARRA LATERAL
-# ---------------------------------------------------------
 st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; margin: 4px 0 4px 0; opacity: 0.6;" />', unsafe_allow_html=True)
 st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
 
@@ -244,10 +281,11 @@ if pastas_encontradas:
         dados_da_pasta = pastas_encontradas[pasta_selecionada]
         exibir_modal_fotos_locais(dados_da_pasta)
 else:
-    st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos. Verifique se a pasta 'Imagens' está no repositório.")
+    st.sidebar.warning("⚠️ Não foi possível acessar o caminho de fotos local.")
+
 
 # ---------------------------------------------------------
-# 2. APRESENTAÇÃO DO PROJETO
+# 5. SEÇÃO DE APRESENTAÇÃO DO PROJETO
 # ---------------------------------------------------------
 st.markdown('<div id="apresentacao"></div>', unsafe_allow_html=True)
 
@@ -255,7 +293,6 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     col_apresentacao_foto, col_apresentacao_info = st.columns([2.2, 1])
 
-    # Insira os links do Google Drive aqui
     link_drive_foto_apresentacao = "https://drive.google.com/file/d/1Ebu5KMqcD0qWbOpz80I1cERKx7z7RPoM/view?usp=drive_link" 
     link_drive_logo_apresentacao = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
 
@@ -265,7 +302,6 @@ with st.container():
     with col_apresentacao_foto:
         st.subheader("📌 Apresentação")
         if url_foto_apresentacao:
-            # Container HTML para aplicar o enquadramento horizontal fixo
             st.markdown(
                 f'''
                 <div class="apresentacao-foto-container">
@@ -300,49 +336,80 @@ with st.container():
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
-# 3. ÁREA PRINCIPAL (JANELA 1: MAPA + DETALHES)
+# 6. SEÇÃO PRINCIPAL (MAPA INTERATIVO E DETALHES)
 # ---------------------------------------------------------
 st.markdown('<div id="territorio"></div>', unsafe_allow_html=True)
-
-if df_filtrado.empty:
-    st.warning("⚠️ Nenhum dado disponível para exibir no mapa.")
-    st.info("Verifique se o arquivo JSON tem dados válidos com coordenadas (lat/lon).")
-    st.stop()
 
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     col_mapa, col_detalhes = st.columns([2.2, 1])
 
     with col_mapa:
-        st.subheader("📍 Territorialização")
-        st.info(f"Mostrando {len(df_filtrado)} local(is)")
+        st.subheader("📍 MAPA INTERATIVO")
         
         mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="OpenStreetMap") #CartoDB voyager
         
-        for idx, row in df_filtrado.iterrows():
-            if pd.isna(row["lat"]) or pd.isna(row["lon"]):
-                continue
-            
-            icone_nome = row.get("icone", "hospital")
-            if pd.isna(icone_nome): icone_nome = "hospital"
-            
-            nome_local = row.get("nome", f"Local {idx}")
-            if pd.isna(nome_local): nome_local = f"Local {idx}"
-            
-            categoria_local = row.get("categoria", "Não especificada")
-            if pd.isna(categoria_local): categoria_local = "Não especificada"
-            
-            cor_local = row.get("cor", "purple")
-            if pd.isna(cor_local): cor_local = "purple"
+        # CAMADA 1: PONTOS DE TERRITORIALIZAÇÃO
+        if camada_selecionada == "📍 Territorialização (AfirmaSUS)" and not df_filtrado.empty:
+            st.info(f"Mostrando {len(df_filtrado)} local(is)")
+            for idx, row in df_filtrado.iterrows():
+                if pd.isna(row["lat"]) or pd.isna(row["lon"]):
+                    continue
                 
-            folium.Marker(
-                location=[row["lat"], row["lon"]],
-                popup=nome_local,
-                tooltip=f"{nome_local} ({categoria_local})",
-                icon=folium.Icon(color=cor_local, icon=icone_nome, prefix="fa")
-            ).add_to(mapa_jp)
-        
+                icone_nome = row.get("icone", "hospital")
+                if pd.isna(icone_nome): icone_nome = "hospital"
+                
+                nome_local = row.get("nome", f"Local {idx}")
+                if pd.isna(nome_local): nome_local = f"Local {idx}"
+                
+                categoria_local = row.get("categoria", "Não especificada")
+                if pd.isna(categoria_local): categoria_local = "Não especificada"
+                
+                cor_local = row.get("cor", "purple")
+                if pd.isna(cor_local): cor_local = "purple"
+                    
+                folium.Marker(
+                    location=[row["lat"], row["lon"]],
+                    popup=nome_local,
+                    tooltip=f"{nome_local} ({categoria_local})",
+                    icon=folium.Icon(color=cor_local, icon=icone_nome, prefix="fa")
+                ).add_to(mapa_jp)
+
+        # CAMADA 2: POLÍGONOS ENCONTRO DE SAÚDE
+        elif camada_selecionada == "🩺 Encontro de Saúde (Setores)" and poligonos_encontro:
+            st.info(f"Exibindo {len(poligonos_encontro)} região(ões) mapeada(s)")
+            for setor in poligonos_encontro:
+                cor_area = setor.get("cor", "blue")
+                vertices = setor.get("vertices", [])
+                status = setor.get("status", "pendente")
+                
+                emoji_status = "✅" if status == "concluido" else "❌"
+                
+                folium.Polygon(
+                    locations=vertices,
+                    color=cor_area,
+                    fill=True,
+                    fill_color=cor_area,
+                    fill_opacity=0.35,
+                    weight=3,
+                    popup=f"<b>{setor.get('nome')}</b><br>{setor.get('descricao')}",
+                    tooltip=f"{emoji_status} {setor.get('nome')}"
+                ).add_to(mapa_jp)
+                
+                centroide = setor.get("centroide")
+                if centroide:
+                    folium.Marker(
+                        location=centroide,
+                        icon=folium.DivIcon(
+                            html=f'<div style="font-size: 24px; text-align: center;">{emoji_status}</div>'
+                        ),
+                        popup=f"Status: {status.capitalize()}"
+                    ).add_to(mapa_jp)
+        else:
+            st.warning("Nenhum dado ativo para exibir nesta camada.")
+
         map_data = st_folium(mapa_jp, width="100%", height=480, key="mapa_folium")
 
     with col_detalhes:
@@ -367,7 +434,7 @@ with st.container():
         if ponto_encontrado is not None:
             if "foto" in ponto_encontrado and pd.notna(ponto_encontrado["foto"]):
                 foto_url = converter_link_drive(ponto_encontrado["foto"])
-                st.image(foto_url, use_container_width=True, caption=ponto_encontrado.get("nome", "Local"))
+                st.image(foto_url, width="stretch", caption=ponto_encontrado.get("nome", "Local"))
             
             st.markdown(f"### {ponto_encontrado.get('nome', 'Local sem nome')}")
             st.markdown(f"**Categoria:** `{ponto_encontrado.get('categoria', 'Não especificada')}`")
@@ -381,8 +448,9 @@ with st.container():
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
-# 4. VÍDEOS (JANELA 2 - CARROSSEL HORIZONTAL)
+# 7. SEÇÃO DE VÍDEOS DA COMUNIDADE
 # ---------------------------------------------------------
 st.markdown('<div id="videos"></div>', unsafe_allow_html=True)
 with st.container():
@@ -436,8 +504,9 @@ with st.container():
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
-# 5. LINHA DO TEMPO HORIZONTAL (JANELA 3 - COM CARROSSEL)
+# 8. SEÇÃO DA LINHA DO TEMPO DE ATIVIDADES
 # ---------------------------------------------------------
 st.markdown('<div id="linha-do-tempo"></div>', unsafe_allow_html=True)
 with st.container():
@@ -516,8 +585,9 @@ with st.container():
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+
 # ---------------------------------------------------------
-# FORMAÇÕES REALIZADAS (CARROSSEL HORIZONTAL)
+# 9. SEÇÃO DE FORMAÇÕES REALIZADAS
 # ---------------------------------------------------------
 st.markdown('<div id="formacoes"></div>', unsafe_allow_html=True)
 with st.container():
@@ -541,7 +611,6 @@ with st.container():
         for item in lista_formacoes:
             foto_url = converter_link_drive(item.get("foto", ""))
             
-            # Card com dimensões idênticas às de Integrantes, porém contendo apenas a imagem
             card = (
                 f'<div class="timeline-card-h" style="border-top: 5px solid #FF8C00; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center;">'
                 f'  <img src="{foto_url}" alt="{item.get("titulo", "Formação")}" class="formacao-card-img" style="width: 100%; height: 100%; object-fit: cover;" />'
@@ -554,10 +623,8 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
-import plotly.express as px
-
 # ---------------------------------------------------------
-# 6. INDICADORES DE SAÚDE MENTAL E MAPEAMENTO (JANELA 4)
+# 10. SEÇÃO DE INDICADORES DE SAÚDE MENTAL E APRESENTAÇÕES
 # ---------------------------------------------------------
 st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True)
 with st.container():
@@ -570,9 +637,6 @@ with st.container():
         df_mh = pd.read_csv(caminho_csv)
         total_pessoas = len(df_mh)
 
-        # -----------------------------------------------------
-        # 1. CARDS QUANTITATIVOS (MÉTRICAS RESUMIDAS)
-        # -----------------------------------------------------
         st.markdown("**📌 Prevalência de Condições Clínicas**")
         m_col1, m_col2, m_col3, m_col4 = st.columns(4)
 
@@ -592,98 +656,54 @@ with st.container():
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # -----------------------------------------------------
-        # 2. GRÁFICOS DIVERSIFICADOS (LINHA, SCATTER, HISTOGRAMA)
-        # -----------------------------------------------------
         col_esq, col_dir = st.columns(2)
 
-        # A) GRÁFICO DE LINHA: Estresse Médio por Faixa Etária
         with col_esq:
             st.markdown("**📈 Evolução do Nível de Estresse por Faixa Etária**")
-            
-            # Criação dos grupos de idade
             bins = [15, 25, 35, 45, 55, 65]
             labels = ["16-25 anos", "26-35 anos", "36-45 anos", "46-55 anos", "56-65 anos"]
             df_mh["Faixa_Etaria"] = pd.cut(df_mh["Age"], bins=bins, labels=labels)
-            
             df_linha = df_mh.groupby("Faixa_Etaria", observed=False)["Stress_Level"].mean().reset_index()
             
             fig_linha = px.line(
-                df_linha, 
-                x="Faixa_Etaria", 
-                y="Stress_Level", 
-                markers=True,
+                df_linha, x="Faixa_Etaria", y="Stress_Level", markers=True,
                 labels={"Faixa_Etaria": "Faixa Etária", "Stress_Level": "Estresse Médio (1-10)"},
                 color_discrete_sequence=["#FF8C00"]
             )
             fig_linha.update_layout(height=320, margin=dict(l=20, r=20, t=20, b=20))
-            st.plotly_chart(fig_linha, use_container_width=True)
+            st.plotly_chart(fig_linha, width="stretch")
 
-        # B) HISTOGRAMA: Distribuição das Horas de Estudo/Trabalho
         with col_dir:
             st.markdown("**📊 Distribuição de Horas Diárias de Estudo / Trabalho**")
-            
             fig_hist = px.histogram(
-                df_mh, 
-                x="Work_Study_Hours", 
-                nbins=12,
+                df_mh, x="Work_Study_Hours", nbins=12,
                 labels={"Work_Study_Hours": "Horas por Dia"},
                 color_discrete_sequence=["#856eaf"]
             )
-            fig_hist.update_layout(
-                yaxis_title="Quantidade de Pessoas", 
-                height=320, 
-                margin=dict(l=20, r=20, t=20, b=20)
-            )
-            st.plotly_chart(fig_hist, use_container_width=True)
+            fig_hist.update_layout(yaxis_title="Quantidade de Pessoas", height=320, margin=dict(l=20, r=20, t=20, b=20))
+            st.plotly_chart(fig_hist, width="stretch")
 
-        # C) BARRAS EMPILHADAS: Faixas de Horas de Sono vs. Prevalência de Burnout
         st.markdown("**💤 Relação entre Qualidade do Sono e Incidência de Burnout**")
-
-        # Agrupamento das horas de sono em faixas claras
         bins_sono = [0, 5, 7, 12]
         labels_sono = ["< 5h (Privação)", "5-7h (Adequado)", "> 7h (Elevado)"]
         df_mh["Faixa_Sono"] = pd.cut(df_mh["Sleep_Hours"], bins=bins_sono, labels=labels_sono)
-
-        # Mapeamento do status de Burnout para rótulos legíveis
         df_mh["Status_Burnout"] = df_mh["Burnout"].map({1: "Com Burnout", 0: "Sem Burnout"})
 
-        # Cálculo percentual por faixa de sono
-        df_sono_burnout = (
-            pd.crosstab(df_mh["Faixa_Sono"], df_mh["Status_Burnout"], normalize="index") * 100
-        ).reset_index()
-
-        # Transformação para formato longo adequado ao Plotly
-        df_sono_melted = df_sono_burnout.melt(
-            id_vars="Faixa_Sono", 
-            var_name="Status", 
-            value_name="Porcentagem"
-        )
+        df_sono_burnout = (pd.crosstab(df_mh["Faixa_Sono"], df_mh["Status_Burnout"], normalize="index") * 100).reset_index()
+        df_sono_melted = df_sono_burnout.melt(id_vars="Faixa_Sono", var_name="Status", value_name="Porcentagem")
 
         fig_sono = px.bar(
-            df_sono_melted,
-            x="Faixa_Sono",
-            y="Porcentagem",
-            color="Status",
+            df_sono_melted, x="Faixa_Sono", y="Porcentagem", color="Status",
             text=df_sono_melted["Porcentagem"].round(1).astype(str) + "%",
             labels={"Faixa_Sono": "Horas de Sono por Noite", "Porcentagem": "Proporção (%)"},
             color_discrete_map={"Com Burnout": "#DC3545", "Sem Burnout": "#28A745"}
         )
-
-        fig_sono.update_layout(
-            barmode="stack",
-            height=380,
-            margin=dict(l=20, r=20, t=20, b=20),
-            legend_title_text="Diagnóstico"
-        )
-
-        st.plotly_chart(fig_sono, use_container_width=True)
+        fig_sono.update_layout(barmode="stack", height=380, margin=dict(l=20, r=20, t=20, b=20), legend_title_text="Diagnóstico")
+        st.plotly_chart(fig_sono, width="stretch")
     else:
         st.warning(f"⚠️ O arquivo '{caminho_csv}' não foi encontrado no diretório do projeto.")
 
-# ---------------------------------------------------------
-# APRESENTAÇÕES CANVA (CARROSSEL HORIZONTAL)
-# ---------------------------------------------------------
+# APRESENTAÇÕES CANVA
 st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
@@ -707,7 +727,6 @@ with st.container():
             url_embed = pres.get("embed_url", "")
             link_direto = pres.get("link_directo", url_embed)
             
-            # Garantia de formatação do parâmetro ?embed no final do link
             if "canva.com/design/" in url_embed and "?embed" not in url_embed:
                 url_embed = url_embed.split("?")[0] + "/view?embed"
 
@@ -732,12 +751,8 @@ with st.container():
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
-from streamlit_calendar import calendar
-
-from streamlit_calendar import calendar
-
 # ---------------------------------------------------------
-# FUNÇÃO MODAL PARA EXIBIR DETALHES DO EVENTO
+# 11. SEÇÃO DE CALENDÁRIO DE ATIVIDADES
 # ---------------------------------------------------------
 @st.dialog("📌 Detalhes da Atividade")
 def exibir_modal_evento(evento_info):
@@ -750,11 +765,7 @@ def exibir_modal_evento(evento_info):
     st.markdown("---")
     st.markdown(f"**📝 Descrição:**\n\n{descricao}")
 
-
-# ---------------------------------------------------------
-# CALENDÁRIO DE ATIVIDADES COM MODAL AO CLICAR
-# ---------------------------------------------------------
-st.markdown('<div id="linha-do-tempo"></div>', unsafe_allow_html=True)
+st.markdown('<div id="calendario"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("📅 Calendário de Atividades")
@@ -767,7 +778,6 @@ with st.container():
             with open(caminho_eventos, "r", encoding="utf-8") as f:
                 eventos_brutos = json.load(f)
                 
-                # Adapta a estrutura para o FullCalendar armazenar a descrição em extendedProps
                 for ev in eventos_brutos:
                     evento_fmt = ev.copy()
                     evento_fmt["extendedProps"] = {
@@ -796,14 +806,12 @@ with st.container():
         }
     }
 
-    # Renderiza o calendário
     state = calendar(
         options=calendar_options, 
         events=lista_eventos, 
         key="cal_afirmasus_json"
     )
 
-    # Captura o evento de clique na caixa do calendário
     if state.get("eventClick"):
         evento_clicado = state["eventClick"]["event"]
         exibir_modal_evento(evento_clicado)
@@ -841,7 +849,7 @@ st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------
-# 7. INTEGRANTES (JANELA 5 - CARROSSEL HORIZONTAL)
+# 12. SEÇÃO DE INTEGRANTES E PLATAFORMAS
 # ---------------------------------------------------------
 st.markdown('<div id="integrantes"></div>', unsafe_allow_html=True)
 with st.container():
@@ -851,7 +859,6 @@ with st.container():
     caminho_integrantes = "integrantes.json"
     lista_integrantes = []
 
-    # Carrega os dados diretamente do arquivo JSON local
     if os.path.exists(caminho_integrantes):
         try:
             with open(caminho_integrantes, "r", encoding="utf-8") as f:
@@ -864,10 +871,7 @@ with st.container():
     if lista_integrantes:
         integrantes_cards_html = []
         for intg in lista_integrantes:
-            # Trata o link do Google Drive se necessário
             foto_url = converter_link_drive(intg.get("foto", ""))
-            
-            # Pega a situação (Bolsista, Voluntário, etc.) se existir no JSON
             situacao_texto = intg.get("situacao", "")
             html_situacao = f'<div class="timeline-desc-h" style="font-size: 12px; color: #777; margin-top: 2px;">{situacao_texto}</div>' if situacao_texto else ''
 
@@ -885,9 +889,6 @@ with st.container():
 
         st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(integrantes_cards_html)}</div>', unsafe_allow_html=True)
 
-# ---------------------------------------------------------
-# 8. INFORMAÇÕES E PLATAFORMAS (JANELA 6)
-# ---------------------------------------------------------
 st.markdown('<div id="informacoes"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
