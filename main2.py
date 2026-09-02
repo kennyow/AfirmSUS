@@ -585,6 +585,51 @@ with st.container():
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
+# Adicione a importação no topo do arquivo junto com as outras
+from streamlit_timeline import timeline
+import json
+import os
+
+# ---------------------------------------------------------
+# SEÇÃO DA LINHA DO TEMPO (TimelineJS)
+# ---------------------------------------------------------
+st.markdown('<div id="linha-do-tempo-interativa"></div>', unsafe_allow_html=True)
+
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    st.subheader("⏳ Linha do Tempo Interativa de Atividades")
+
+    caminho_atividades = "atividades.json"
+
+    if os.path.exists(caminho_atividades):
+        try:
+            with open(caminho_atividades, "r", encoding="utf-8") as f:
+                dados_atividades = json.load(f)
+
+            # Converter link do Drive no título
+            if "title" in dados_atividades and "media" in dados_atividades["title"]:
+                if "url" in dados_atividades["title"]["media"]:
+                    dados_atividades["title"]["media"]["url"] = converter_link_drive(
+                        dados_atividades["title"]["media"]["url"]
+                    )
+
+            # Converter links do Drive em todos os eventos automaticamente
+            if "events" in dados_atividades:
+                for evento in dados_atividades["events"]:
+                    if "media" in evento and "url" in evento["media"]:
+                        evento["media"]["url"] = converter_link_drive(evento["media"]["url"])
+
+            # Converte novamente para JSON string e passa para a timeline
+            json_tratado = json.dumps(dados_atividades, ensure_ascii=False)
+            timeline(json_tratado, height=650)
+
+        except Exception as e:
+            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_atividades}': {e}")
+    else:
+        st.warning(f"⚠️ Arquivo '{caminho_atividades}' não foi encontrado no diretório.")
+
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # 9. SEÇÃO DE FORMAÇÕES REALIZADAS
