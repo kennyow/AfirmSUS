@@ -624,131 +624,94 @@ st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------
-# 10. SEÇÃO DE INDICADORES DE SAÚDE MENTAL E APRESENTAÇÕES
+# 10. SEÇÃO DE INDICADORES DE PROCESSOS DE TRABALHO E FORMAÇÃO
 # ---------------------------------------------------------
 st.markdown('<div id="relatorios"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
-    st.subheader("📊 Indicadores do Mapeamento de Saúde Mental")
+    st.subheader("📊 Indicadores de Processos de Trabalho e Formação - (CronoFloTimeline)")
 
-    caminho_csv = "mental_health.csv"
-    
-    if os.path.exists(caminho_csv):
-        df_mh = pd.read_csv(caminho_csv)
-        total_pessoas = len(df_mh)
+    # --- 1. CARDS DE MÉTRICAS EDITÁVEIS ---
 
-        st.markdown("**📌 Prevalência de Condições Clínicas**")
-        m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+    st.markdown("##### 📌 Indicadores Gerais de Impacto e Saúde")
+        
+    # Formulário / Expander opcional para alterar os valores rapidamente
+    with st.expander("⚙️ Clique para editar os valores dos Indicadores", expanded=False):
+        c_ed1, c_ed2, c_ed3 = st.columns(3)  # Alterado de 4 para 3 colunas
+        with c_ed1:
+            qtd_acoes = st.number_input("Total de Ações Realizadas", min_value=0, value=77, key="inp_qtd1")  # Soma total de eventos
+        with c_ed2:
+            qtd_participantes = st.number_input("Participantes Impactados", min_value=0, value=150, key="inp_qtd2")
+        with c_ed3:
+            qtd_formacoes = st.number_input("Formações e Oficinas Realizadas", min_value=0, value=22, key="inp_qtd3")  # 16 formações + 6 oficinas de teatro
 
-        dep_pct = (df_mh["Depression"].sum() / total_pessoas) * 100
-        anx_pct = (df_mh["Anxiety"].sum() / total_pessoas) * 100
-        burn_pct = (df_mh["Burnout"].sum() / total_pessoas) * 100
-        estresse_medio = df_mh["Stress_Level"].mean()
+    # Exibição dos Cards organizados
+    m_col1, m_col2, m_col3 = st.columns(3)  # Alterado de 4 para 3 colunas
+    with m_col1:
+        st.metric(label="Total de Ações Realizadas", value=f"{qtd_acoes}", delta="eventos cadastrados")
+    with m_col2:
+        st.metric(label="Participantes Impactados", value=f"{qtd_participantes}", delta="pessoas")
+    with m_col3:
+        st.metric(label="Formações e Oficinas", value=f"{qtd_formacoes}", delta="atividades formativas")
 
-        with m_col1:
-            st.metric(label="Depressão", value=f"{dep_pct:.1f}%", delta=f"{df_mh['Depression'].sum()} pessoas")
-        with m_col2:
-            st.metric(label="Ansiedade", value=f"{anx_pct:.1f}%", delta=f"{df_mh['Anxiety'].sum()} pessoas")
-        with m_col3:
-            st.metric(label="Burnout", value=f"{burn_pct:.1f}%", delta=f"{df_mh['Burnout'].sum()} pessoas")
-        with m_col4:
-            st.metric(label="Estresse Médio", value=f"{estresse_medio:.2f} / 10")
+    st.markdown("<br>", unsafe_allow_html=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
+    # --- 2. GRÁFICOS ESTATÍSTICOS BASEADOS NO CHRONOFLO ---
+    st.markdown("##### 📈 Panorama das Atividades do ChronoFlo")
 
-        col_esq, col_dir = st.columns(2)
+    # --- DADOS ATUALIZADOS DO CHRONOFLO ---
 
-        with col_esq:
-            st.markdown("**📈 Evolução do Nível de Estresse por Faixa Etária**")
-            bins = [15, 25, 35, 45, 55, 65]
-            labels = ["16-25 anos", "26-35 anos", "36-45 anos", "46-55 anos", "56-65 anos"]
-            df_mh["Faixa_Etaria"] = pd.cut(df_mh["Age"], bins=bins, labels=labels)
-            df_linha = df_mh.groupby("Faixa_Etaria", observed=False)["Stress_Level"].mean().reset_index()
-            
-            fig_linha = px.line(
-                df_linha, x="Faixa_Etaria", y="Stress_Level", markers=True,
-                labels={"Faixa_Etaria": "Faixa Etária", "Stress_Level": "Estresse Médio (1-10)"},
-                color_discrete_sequence=["#FF8C00"]
-            )
-            fig_linha.update_layout(height=320, margin=dict(l=20, r=20, t=20, b=20))
-            st.plotly_chart(fig_linha, width="stretch")
+    # 1. Evolução Mensal (dados de Dez/25 a Ago/26)
+    dados_mensais = pd.DataFrame({
+        "Mês": ["Dez/25", "Jan/26", "Fev/26", "Mar/26", "Abr/26", "Mai/26", "Jun/26", "Jul/26", "Ago/26"],
+        "Quantidade": [5, 6, 7, 20, 7, 9, 11, 4, 2]
+    })
 
-        with col_dir:
-            st.markdown("**📊 Distribuição de Horas Diárias de Estudo / Trabalho**")
-            fig_hist = px.histogram(
-                df_mh, x="Work_Study_Hours", nbins=12,
-                labels={"Work_Study_Hours": "Horas por Dia"},
-                color_discrete_sequence=["#856eaf"]
-            )
-            fig_hist.update_layout(yaxis_title="Quantidade de Pessoas", height=320, margin=dict(l=20, r=20, t=20, b=20))
-            st.plotly_chart(fig_hist, width="stretch")
+    # 2. Distribuição por Categoria
+    dados_categorias = pd.DataFrame({
+        "Categoria": [
+            "Rodas de Afirmações e Conversa",
+            "Territorialização / Campo",
+            "Formações, Cursos e Oficinas",
+            "Oficinas Culturais/Teatro",
+            "Gestão e Comunicação",
+            "Eventos Institucionais"
+        ],
+        "Eventos": [24, 12, 16, 6, 9, 10]
+    })
 
-        st.markdown("**💤 Relação entre Qualidade do Sono e Incidência de Burnout**")
-        bins_sono = [0, 5, 7, 12]
-        labels_sono = ["< 5h (Privação)", "5-7h (Adequado)", "> 7h (Elevado)"]
-        df_mh["Faixa_Sono"] = pd.cut(df_mh["Sleep_Hours"], bins=bins_sono, labels=labels_sono)
-        df_mh["Status_Burnout"] = df_mh["Burnout"].map({1: "Com Burnout", 0: "Sem Burnout"})
+    col_graf1, col_graf2 = st.columns(2)
 
-        df_sono_burnout = (pd.crosstab(df_mh["Faixa_Sono"], df_mh["Status_Burnout"], normalize="index") * 100).reset_index()
-        df_sono_melted = df_sono_burnout.melt(id_vars="Faixa_Sono", var_name="Status", value_name="Porcentagem")
-
-        fig_sono = px.bar(
-            df_sono_melted, x="Faixa_Sono", y="Porcentagem", color="Status",
-            text=df_sono_melted["Porcentagem"].round(1).astype(str) + "%",
-            labels={"Faixa_Sono": "Horas de Sono por Noite", "Porcentagem": "Proporção (%)"},
-            color_discrete_map={"Com Burnout": "#DC3545", "Sem Burnout": "#28A745"}
+    with col_graf1:
+        st.markdown("**Evolução Mensal de Atividades**")
+        fig_linha = px.line(
+            dados_mensais, 
+            x="Mês", 
+            y="Quantidade", 
+            markers=True,
+            text="Quantidade",
+            labels={"Quantidade": "Nº de Eventos", "Mês": "Mês / Ano"},
+            color_discrete_sequence=["#FF8C00"]
         )
-        fig_sono.update_layout(barmode="stack", height=380, margin=dict(l=20, r=20, t=20, b=20), legend_title_text="Diagnóstico")
-        st.plotly_chart(fig_sono, width="stretch")
-    else:
-        st.warning(f"⚠️ O arquivo '{caminho_csv}' não foi encontrado no diretório do projeto.")
+        fig_linha.update_traces(textposition="top center", fill='tozeroy')
+        fig_linha.update_layout(height=330, margin=dict(l=20, r=20, t=30, b=20))
+        st.plotly_chart(fig_linha, use_container_width=True)
+
+    with col_graf2:
+        st.markdown("**Distribuição por Eixo de Atuação**")
+        fig_rosca = px.pie(
+            dados_categorias, 
+            values="Eventos", 
+            names="Categoria", 
+            hole=0.45,
+            color_discrete_sequence=["#856eaf", "#28A745", "#FF8C00", "#7BDCEB", "#CF68E3", "#DC3545"]
+        )
+        fig_rosca.update_traces(textinfo="percent+value")
+        fig_rosca.update_layout(height=330, margin=dict(l=10, r=10, t=30, b=10), showlegend=True)
+        st.plotly_chart(fig_rosca, use_container_width=True)
 
 # APRESENTAÇÕES CANVA
 st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
-with st.container():
-    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
-    st.subheader("📊 Apresentações do Projeto")
-
-    caminho_apresentacoes = "apresentacoes.json"
-    lista_apresentacoes = []
-
-    if os.path.exists(caminho_apresentacoes):
-        try:
-            with open(caminho_apresentacoes, "r", encoding="utf-8") as f:
-                lista_apresentacoes = json.load(f)
-        except Exception as e:
-            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_apresentacoes}': {e}")
-    else:
-        st.warning(f"⚠️ Arquivo '{caminho_apresentacoes}' não encontrado.")
-
-    if lista_apresentacoes:
-        cards_canva_html = []
-        for pres in lista_apresentacoes:
-            url_embed = pres.get("embed_url", "")
-            link_direto = pres.get("link_directo", url_embed)
-            
-            if "canva.com/design/" in url_embed and "?embed" not in url_embed:
-                url_embed = url_embed.split("?")[0] + "/view?embed"
-
-            card = (
-                f'<div class="timeline-card-h" style="min-width: 340px; border-top: 5px solid #856eaf; display: flex; flex-direction: column; justify-content: space-between;">'
-                f'  <div>'
-                f'      <div style="position: relative; width: 100%; height: 210px; border-radius: 6px; overflow: hidden; margin-bottom: 10px; background-color: #f8f9fa;">'
-                f'          <iframe loading="lazy" src="{url_embed}" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0; margin: 0;" '
-                f'                  allowfullscreen="allowfullscreen" allow="fullscreen; autoplay; clipboard-write; encrypted-media; picture-in-picture" '
-                f'                  referrerpolicy="no-referrer-when-downgrade"></iframe>'
-                f'      </div>'
-                f'      <div class="timeline-title-h"><b>{pres.get("titulo", "")}</b></div>'
-                f'      <div class="timeline-desc-h" style="color: #555; margin-bottom: 10px;">{pres.get("descricao", "")}</div>'
-                f'  </div>'
-                f'  <a href="{link_direto}" target="_blank" rel="noopener noreferrer" style="text-align: center; display: block; background-color: #856eaf; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold;">🔗 Abrir no Canva</a>'
-                f'</div>'
-            )
-            cards_canva_html.append(card)
-
-        st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(cards_canva_html)}</div>', unsafe_allow_html=True)
-
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------
