@@ -758,6 +758,49 @@ with st.container():
 # APRESENTAÇÕES CANVA
 st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
 
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    st.subheader("📊 Apresentações do Projeto")
+
+    caminho_apresentacoes = "apresentacoes.json"
+    lista_apresentacoes = []
+
+    if os.path.exists(caminho_apresentacoes):
+        try:
+            with open(caminho_apresentacoes, "r", encoding="utf-8") as f:
+                lista_apresentacoes = json.load(f)
+        except Exception as e:
+            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_apresentacoes}': {e}")
+    else:
+        st.warning(f"⚠️ Arquivo '{caminho_apresentacoes}' não encontrado no diretório do projeto.")
+
+    if lista_apresentacoes:
+        cards_canva_html = []
+        for pres in lista_apresentacoes:
+            url_embed = pres.get("embed_url", "")
+            link_direto = pres.get("link_directo", url_embed)
+            
+            if "canva.com/design/" in url_embed and "?embed" not in url_embed:
+                url_embed = url_embed.split("?")[0] + "/view?embed"
+
+            card = (
+                f'<div class="timeline-card-h" style="min-width: 340px; border-top: 5px solid #856eaf; display: flex; flex-direction: column; justify-content: space-between;">'
+                f'  <div>'
+                f'      <div style="position: relative; width: 100%; height: 210px; border-radius: 6px; overflow: hidden; margin-bottom: 10px; background-color: #f8f9fa;">'
+                f'          <iframe loading="lazy" src="{url_embed}" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0; margin: 0;" '
+                f'                  allowfullscreen="allowfullscreen" allow="fullscreen; autoplay; clipboard-write; encrypted-media; picture-in-picture" '
+                f'                  referrerpolicy="no-referrer-when-downgrade"></iframe>'
+                f'      </div>'
+                f'      <div class="timeline-title-h"><b>{pres.get("titulo", "")}</b></div>'
+                f'      <div class="timeline-desc-h" style="color: #555; margin-bottom: 10px;">{pres.get("descricao", "")}</div>'
+                f'  </div>'
+                f'  <a href="{link_direto}" target="_blank" rel="noopener noreferrer" style="text-align: center; display: block; background-color: #856eaf; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold;">🔗 Abrir no Canva</a>'
+                f'</div>'
+            )
+            cards_canva_html.append(card)
+
+        st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(cards_canva_html)}</div>', unsafe_allow_html=True)
+
 
 # ---------------------------------------------------------
 # 11. SEÇÃO DE CALENDÁRIO DE ATIVIDADES
