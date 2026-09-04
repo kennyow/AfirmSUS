@@ -293,7 +293,7 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     col_apresentacao_foto, col_apresentacao_info = st.columns([2.2, 1])
 
-    link_drive_foto_apresentacao = "https://drive.google.com/file/d/1Ebu5KMqcD0qWbOpz80I1cERKx7z7RPoM/view?usp=drive_link" 
+    link_drive_foto_apresentacao = "https://drive.google.com/file/d/1sXMf6Y3c5RKxT9Ss5DT6ZwlDh63BOtIj/view?usp=drive_link" 
     link_drive_logo_apresentacao = "https://drive.google.com/file/d/1YD1pFzwf_FLuvoZIP1R0oSrGh8XLghfC/view?usp=drive_link"
 
     url_foto_apresentacao = converter_link_drive(link_drive_foto_apresentacao)

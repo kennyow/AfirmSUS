@@ -1,5 +1,21 @@
 [
-
+  {
+    "data": "Setembro / 2026",
+    "titulo": "Visita Técnica do Ministério da Saúde",
+    "categoria": "Saúde",
+    "cor_borda": "#17A2B8",
+    "descricao": "Visita a famílias da comunidade São Rafael para identificar necessidades de saúde, oferecer apoio e fortalecer vínculos comunitários.",
+    "fotos": [
+      "https://drive.google.com/file/d/1xXcv1Y9w53BHVUefu7FyzUisUpki9Ncn/view?usp=drive_link",
+      "https://drive.google.com/file/d/1xSgvNa1adNs-UVcEa6WU36He8ydi6scA/view?usp=drive_link",
+      "https://drive.google.com/file/d/1PKLq8i4saOn0dl83uvGXIZ9m9QkYObng/view?usp=drive_link",
+      "https://drive.google.com/file/d/18wmv40m9JTLpukuUW3xCspRoPfHHpJMq/view?usp=drive_link",
+      "https://drive.google.com/file/d/11i7vpfWwTmnaBpjXfMXaRU-g9TvAiORA/view?usp=drive_link",
+      "https://drive.google.com/file/d/1D3xm8tBQd99WQhVuuR8DtJl-PQVxElWP/view?usp=drive_link",
+      "https://drive.google.com/file/d/1_O3SuSvBbE63GdQUNdXQHQRUwKLW_moV/view?usp=drive_link",
+      "https://drive.google.com/file/d/1HrmCkTBDOqwVBvQrqQ7iK0iwaZDLbgef/view?usp=drive_link"
+    ]
+  },
   {
     "data": "Março / 2026",
     "titulo": "Territorialização e Mapeamento Participativo",
