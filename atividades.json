@@ -157,6 +157,40 @@
         "text": "Visita Técnica de Apoio e Monitoramento do Programa AfirmaSUS-JP, com a presença de representantes do Ministério da Saúde e da equipe do AfirmaSUS-JP, para avaliar o andamento das atividades e identificar oportunidades de melhoria."
       },
       "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "https://drive.google.com/file/d/1FkgUrRD_1bLWhCodKUcr-HHHN77Q_GHS/view?usp=drive_link",
+      "caption": "Apresentação da Plataforma"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "09",
+        "day": "10"
+      },
+      "text": {
+        "headline": "Apresentação da Plataforma aos estudantes de Medicina",
+        "text": "Apresentação da Plataforma do AfirmaSUS-JP aos estudantes de Medicina, destacando as funcionalidades, benefícios e oportunidades de participação na melhoria da atenção primária à saúde."
+      },
+      "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "https://drive.google.com/file/d/13HYcT2nIusWz7eUPXJNAaI7u8y-5YAVe/view?usp=drive_link",
+      "caption": "Levantamento de Dados"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "09",
+        "day": "11"
+      },
+      "text": {
+        "headline": "Levantamento de Dados",
+        "text": "Levantamento de dados sobre o Bolsa Família para o estudo dos impactos no território."
+      },
+      "group": "Eventos"
     }
   ]
 }
