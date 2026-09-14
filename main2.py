@@ -42,6 +42,33 @@ def carregar_css(caminho_arquivo):
 
 carregar_css("style.css")
 
+# ---------------------------------------------------------
+# FUNÇÃO AUXILIAR PARA GERENCIAR LIKES ACUMULATIVOS
+# ---------------------------------------------------------
+def gerenciar_likes(caminho_arquivo="likes.json"):
+    # Garante que o arquivo exista com valor inicial
+    if not os.path.exists(caminho_arquivo):
+        with open(caminho_arquivo, "w", encoding="utf-8") as f:
+            json.dump({"total_likes": 0}, f)
+    
+    # Tenta ler o valor atual
+    try:
+        with open(caminho_arquivo, "r", encoding="utf-8") as f:
+            dados = json.load(f)
+            total = dados.get("total_likes", 0)
+    except Exception:
+        total = 0
+
+    return total
+
+def incrementar_like(caminho_arquivo="likes.json"):
+    total = gerenciar_likes(caminho_arquivo) + 1
+    try:
+        with open(caminho_arquivo, "w", encoding="utf-8") as f:
+            json.dump({"total_likes": total}, f)
+    except Exception as e:
+        st.error(f"Erro ao salvar curtida: {e}")
+
 
 # ---------------------------------------------------------
 # 2. CARREGAMENTO INICIAL DA BASE DE DADOS (GLOBAL)
@@ -106,6 +133,7 @@ st.markdown(header_html, unsafe_allow_html=True)
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
 
+
 # ---------------------------------------------------------
 # 4. BARRA LATERAL (FILTROS DE PESQUISA E GALERIA)
 # ---------------------------------------------------------
@@ -121,6 +149,25 @@ if logo_sidebar_url:
         ''',
         unsafe_allow_html=True
     )
+
+# --- NOVA SEÇÃO DE CURTIDAS ACUMULATIVAS ---
+st.sidebar.markdown(
+    """
+    <div style="text-align: center; font-size: 14px; margin-bottom: 8px;">
+        Gostou da nossa página? Então deixa o seu like! 👍
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
+
+total_atual_likes = gerenciar_likes()
+
+# Botão roxo usando a funcionalidade de chave nativa ou callback
+if st.sidebar.button(f"💜 Curtir ({total_atual_likes})", key="btn_like_sidebar", width="stretch"):
+    incrementar_like()
+    st.rerun()
+
+st.sidebar.markdown("---")
 
 st.sidebar.markdown("### 🗺️ Mapeamento e Camadas")
 

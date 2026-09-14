@@ -414,3 +414,19 @@ div.floating-window {
     object-fit: cover;
     border-radius: 6px;
 }
+
+/* Estilo roxo destacado para o botão de curtir */
+div[data-testid="stSidebar"] div.stButton > button[key="btn_like_sidebar"],
+div[data-testid="stSidebar"] div.stButton > button:has(div:contains("Curtir")) {
+    background-color: #856eaf !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: bold !important;
+    transition: background-color 0.3s ease;
+}
+
+div[data-testid="stSidebar"] div.stButton > button[key="btn_like_sidebar"]:hover,
+div[data-testid="stSidebar"] div.stButton > button:has(div:contains("Curtir")):hover {
+    background-color: #6c5494 !important;
+    color: #ffffff !important;
+}
