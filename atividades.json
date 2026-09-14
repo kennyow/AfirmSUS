@@ -191,6 +191,23 @@
         "text": "Levantamento de dados sobre o Bolsa Família para o estudo dos impactos no território."
       },
       "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "https://drive.google.com/file/d/1LFEWE9sbUlgCT73c6Ts2ErEI4Fr074J3/view?usp=drive_link",
+      "caption": "Roda de Afirmações"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "09",
+        "day": "11"
+      },
+      "text": {
+        "headline": "Roda de Afirmações",
+        "text": "Reunião para definir estratégias de atuação do AfirmaSUS-JP no território em relação ao Bolsa Família, com a participação dos integrantes do programa."
+      },
+      "group": "Eventos"
     }
   ]
 }
