@@ -12,6 +12,19 @@ import textwrap
 import base64
 import plotly.express as px
 
+
+# URL da planilha publicada em formato CSV
+URL_SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXYHqza4q-hMUQeCgk5iG9_EQx4L6hRqa1syY_teVnppYgOmZ4XkXxhIFwOb_H3h_J58SF74UEaPv/pub?output=csv"
+
+@st.cache_data(ttl=60)  # Recarrega os dados a cada 60 segundos
+def carregar_respostas_form(url):
+    try:
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error(f"Erro ao carregar dados do formulário: {e}")
+        return pd.DataFrame()
+
 # ---------------------------------------------------------
 # 1. FUNÇÕES AUXILIARES E CONFIGURAÇÕES INICIAIS
 # ---------------------------------------------------------
@@ -801,6 +814,139 @@ with st.container():
         fig_rosca.update_traces(textinfo="percent+value")
         fig_rosca.update_layout(height=330, margin=dict(l=10, r=10, t=30, b=10), showlegend=True)
         st.plotly_chart(fig_rosca, use_container_width=True)
+
+# ---------------------------------------------------------
+# SEÇÃO DE PESQUISA / DADOS DOS FORMULÁRIOS (ÁREAS DIVIDIDAS)
+# ---------------------------------------------------------
+st.markdown('<div id="coleta-dados"></div>', unsafe_allow_html=True)
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    st.subheader("📋 Diagnóstico da Comunidade (Coleta de Dados por Área)")
+
+    # 1. URLs DAS PLANILHAS PUBLICADAS EM CSV
+    # Substitua abaixo pela URL CSV real da Área de Ismael quando tiver
+    URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXYHqza4q-hMUQeCgk5iG9_EQx4L6hRqa1syY_teVnppYgOmZ4XkXxhIFwOb_H3h_J58SF74UEaPv/pub?output=csv"
+    URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQG-gEcv2FLpxo4CDOWfCx53dYv_O-KdhRX3VDnvYMPn_fP6l1WClMMVD-YEFmkKc_0zXuYoBgysLAy/pub?output=csv"
+
+    @st.cache_data(ttl=30)
+    def ler_dados_forms(url):
+        if not url or "http" not in url:
+            return pd.DataFrame()
+        try:
+            df = pd.read_csv(url)
+            df.columns = df.columns.str.strip()
+            df = df.loc[:, ~df.columns.str.contains('Carimbo|Timestamp|Hora de envio', case=False)]
+            return df
+        except Exception:
+            return pd.DataFrame()
+
+    df_fernanda = ler_dados_forms(URL_FERNANDA)
+    df_ismael = ler_dados_forms(URL_ISMAEL)
+
+    # 2. FUNÇÃO PARA ENCONTRAR COLUNAS POR PALAVRA-CHAVE
+    def buscar_coluna(palavras_chave, df):
+        for col in df.columns:
+            if any(p.lower() in col.lower() for p in palavras_chave):
+                if not any(n in col.lower() for n in ["seu nome", "nome completo", "nome:"]):
+                    return col
+        return None
+
+    # 3. FUNÇÃO PARA RENDERIZAR O PAINEL COMPLETO DE UMA ÁREA
+    def gerar_painel_area(df, titulo_area, cor_tema):
+        st.markdown(f"<h4 style='text-align: center; color: {cor_tema};'>{titulo_area}</h4>", unsafe_allow_html=True)
+
+        if df.empty:
+            st.info(f"💡 Nenhuma resposta registrada para a {titulo_area} até o momento.")
+            return
+
+        total_resp = len(df)
+        st.metric(label=f"Total de Respostas ({titulo_area})", value=f"{total_resp} respostas")
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        col_rua = buscar_coluna(["rua", "logradouro", "endereço"], df)
+        col_dia = buscar_coluna(["dia", "semana"], df)
+        col_turno = buscar_coluna(["turno", "período"], df)
+        col_horario = buscar_coluna(["horário", "horario", "hora"], df)
+        col_topico = buscar_coluna(["tópico", "topico", "assunto", "tema", "abordado"], df)
+
+        # --- NOME DA RUA (Barras Horizontais) ---
+        if col_rua:
+            st.markdown(f"**🛣️ {col_rua}**")
+            df_ruas = df[col_rua].dropna().value_counts().reset_index()
+            df_ruas.columns = ["Rua", "Qtd"]
+            fig_ruas = px.bar(
+                df_ruas, y="Rua", x="Qtd", orientation="h", text="Qtd",
+                color_discrete_sequence=[cor_tema]
+            )
+            fig_ruas.update_traces(textposition="outside")
+            fig_ruas.update_layout(
+                yaxis={'categoryorder': 'total ascending'},
+                height=max(200, len(df_ruas) * 35),
+                margin=dict(l=10, r=20, t=10, b=10)
+            )
+            st.plotly_chart(fig_ruas, use_container_width=True)
+
+        # --- DIA DA SEMANA (Top 3) ---
+        if col_dia:
+            st.markdown(f"**📅 {col_dia} (Top 3)**")
+            df_dias = df[col_dia].dropna().value_counts().head(3).reset_index()
+            df_dias.columns = ["Dia", "Qtd"]
+            fig_dias = px.bar(
+                df_dias, x="Dia", y="Qtd", text="Qtd",
+                color_discrete_sequence=[cor_tema]
+            )
+            fig_dias.update_traces(textposition="auto")
+            fig_dias.update_layout(height=230, margin=dict(l=10, r=10, t=10, b=10))
+            st.plotly_chart(fig_dias, use_container_width=True)
+
+        # --- TURNO (Mais Votado) ---
+        if col_turno:
+            st.markdown(f"**☀️ {col_turno}**")
+            df_turno = df[col_turno].dropna().value_counts().reset_index()
+            if not df_turno.empty:
+                t_nome = df_turno.iloc[0, 0]
+                t_qtd = df_turno.iloc[0, 1]
+                st.info(f"🏆 **{t_nome}** lidera com **{t_qtd}** voto(s).")
+
+        # --- HORÁRIO (Top 3) ---
+        if col_horario:
+            st.markdown(f"**⏰ {col_horario} (Top 3)**")
+            df_horarios = df[col_horario].dropna().value_counts().head(3).reset_index()
+            df_horarios.columns = ["Horário", "Qtd"]
+            fig_horarios = px.bar(
+                df_horarios, x="Horário", y="Qtd", text="Qtd",
+                color_discrete_sequence=[cor_tema]
+            )
+            fig_horarios.update_traces(textposition="auto")
+            fig_horarios.update_layout(height=230, margin=dict(l=10, r=10, t=10, b=10))
+            st.plotly_chart(fig_horarios, use_container_width=True)
+
+        # --- TÓPICO A SER ABORDADO (Treemap) ---
+        if col_topico:
+            st.markdown(f"**🧩 {col_topico}**")
+            topicos_expandidos = df[col_topico].dropna().astype(str).str.split(',').explode().str.strip()
+            df_topicos = topicos_expandidos.value_counts().reset_index()
+            df_topicos.columns = ["Tópico", "Qtd"]
+
+            fig_blocos = px.treemap(
+                df_topicos, path=["Tópico"], values="Qtd",
+                color="Qtd", color_continuous_scale="Purples"
+            )
+            fig_blocos.update_traces(textinfo="label+value")
+            fig_blocos.update_layout(height=280, margin=dict(l=5, r=5, t=5, b=5))
+            st.plotly_chart(fig_blocos, use_container_width=True)
+
+    # 4. CRIAÇÃO DAS DUAS COLUNAS PRINCIPAIS (LADO A LADO)
+    col_esquerda, col_direita = st.columns(2)
+
+    with col_esquerda:
+        gerar_painel_area(df_fernanda, "Área de Fernanda", "#FF8C00")
+
+    with col_direita:
+        gerar_painel_area(df_ismael, "Área de Ismael", "#856eaf")
+
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
 
 # APRESENTAÇÕES CANVA
 st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
