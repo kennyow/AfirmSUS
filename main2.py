@@ -825,8 +825,8 @@ with st.container():
 
     # 1. URLs DAS PLANILHAS PUBLICADAS EM CSV
     # Substitua abaixo pela URL CSV real da Área de Ismael quando tiver
-    URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXYHqza4q-hMUQeCgk5iG9_EQx4L6hRqa1syY_teVnppYgOmZ4XkXxhIFwOb_H3h_J58SF74UEaPv/pub?output=csv"
-    URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQG-gEcv2FLpxo4CDOWfCx53dYv_O-KdhRX3VDnvYMPn_fP6l1WClMMVD-YEFmkKc_0zXuYoBgysLAy/pub?output=csv"
+    URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWOIO1_FY31_7Er-OlS_EnZY9k8OP7obVDVAWTyeaYpMi-cPNb-kQ5Ai03ke6I97dxSJxWdA3ycYxo/pub?output=csv"
+    URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSW6a42wJQT2YamjcBSln_uHeqFtpzW6-6GBtw4A8D0jXrXXpVbSqS1nvTuNYdCoUZuwEwI_tKO4z40/pub?output=csv"
 
     @st.cache_data(ttl=30)
     def ler_dados_forms(url):
@@ -867,7 +867,7 @@ with st.container():
         col_dia = buscar_coluna(["dia", "semana"], df)
         col_turno = buscar_coluna(["turno", "período"], df)
         col_horario = buscar_coluna(["horário", "horario", "hora"], df)
-        col_topico = buscar_coluna(["tópico", "topico", "assunto", "tema", "abordado"], df)
+        col_topico = buscar_coluna(["tópico", "topico", "assunto", "tema", "abordado", "Pauta"], df)
 
         # --- NOME DA RUA (Barras Horizontais) ---
         if col_rua:
