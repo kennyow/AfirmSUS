@@ -824,9 +824,10 @@ with st.container():
     st.subheader("📋 Diagnóstico da Comunidade (Coleta de Dados por Área)")
 
     # 1. URLs DAS PLANILHAS PUBLICADAS EM CSV
-    # Substitua abaixo pela URL CSV real da Área de Ismael quando tiver
     URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWOIO1_FY31_7Er-OlS_EnZY9k8OP7obVDVAWTyeaYpMi-cPNb-kQ5Ai03ke6I97dxSJxWdA3ycYxo/pub?output=csv"
     URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSW6a42wJQT2YamjcBSln_uHeqFtpzW6-6GBtw4A8D0jXrXXpVbSqS1nvTuNYdCoUZuwEwI_tKO4z40/pub?output=csv"
+    # INSIRA O LINK CSV DA ÁREA DE ANA PAULA NA VARIÁVEL ABAIXO:
+    URL_ANA_PAULA = "COLE_O_LINK_CSV_AQUI"
 
     @st.cache_data(ttl=30)
     def ler_dados_forms(url):
@@ -842,6 +843,7 @@ with st.container():
 
     df_fernanda = ler_dados_forms(URL_FERNANDA)
     df_ismael = ler_dados_forms(URL_ISMAEL)
+    df_ana_paula = ler_dados_forms(URL_ANA_PAULA)
 
     # 2. FUNÇÃO PARA ENCONTRAR COLUNAS POR PALAVRA-CHAVE
     def buscar_coluna(palavras_chave, df):
@@ -853,6 +855,8 @@ with st.container():
 
     # 3. FUNÇÃO PARA RENDERIZAR O PAINEL COMPLETO DE UMA ÁREA
     def gerar_painel_area(df, titulo_area, cor_tema):
+        import unicodedata # <-- Biblioteca nativa do Python para tratar acentos
+
         st.markdown(f"<h4 style='text-align: center; color: {cor_tema};'>{titulo_area}</h4>", unsafe_allow_html=True)
 
         if df.empty:
@@ -924,8 +928,23 @@ with st.container():
         # --- TÓPICO A SER ABORDADO (Treemap) ---
         if col_topico:
             st.markdown(f"**🧩 {col_topico}**")
-            topicos_expandidos = df[col_topico].dropna().astype(str).str.split(',').explode().str.strip()
-            df_topicos = topicos_expandidos.value_counts().reset_index()
+            
+            # 1. Separa os tópicos que vêm com vírgula (caso sejam de múltipla escolha) e expande
+            topicos_expandidos = df[col_topico].dropna().astype(str).str.split(',').explode()
+            
+            # 2. Função interna para limpar o texto
+            def limpar_texto(texto):
+                texto = str(texto).strip().lower() # Remove espaços nas pontas e deixa tudo minúsculo
+                # Remove os acentos 
+                texto = unicodedata.normalize('NFKD', texto).encode('ASCII', 'ignore').decode('utf-8')
+                # Devolve com a primeira letra maiúscula para ficar elegante no gráfico
+                return texto.capitalize()
+                
+            # 3. Aplica a padronização (limpeza)
+            topicos_padronizados = topicos_expandidos.apply(limpar_texto)
+            
+            # 4. Conta as ocorrências já com os nomes unificados
+            df_topicos = topicos_padronizados.value_counts().reset_index()
             df_topicos.columns = ["Tópico", "Qtd"]
 
             fig_blocos = px.treemap(
@@ -936,17 +955,17 @@ with st.container():
             fig_blocos.update_layout(height=280, margin=dict(l=5, r=5, t=5, b=5))
             st.plotly_chart(fig_blocos, use_container_width=True)
 
-    # 4. CRIAÇÃO DAS DUAS COLUNAS PRINCIPAIS (LADO A LADO)
-    col_esquerda, col_direita = st.columns(2)
+    # 4. CRIAÇÃO DAS TRÊS COLUNAS PRINCIPAIS (LADO A LADO)
+    col_1, col_2, col_3 = st.columns(3)
 
-    with col_esquerda:
+    with col_1:
         gerar_painel_area(df_fernanda, "Área de Fernanda", "#FF8C00")
 
-    with col_direita:
+    with col_2:
         gerar_painel_area(df_ismael, "Área de Ismael", "#856eaf")
 
-st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-
+    with col_3:
+        gerar_painel_area(df_ana_paula, "Área de Ana Paula", "#28A745")
 
 # APRESENTAÇÕES CANVA
 st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
