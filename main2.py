@@ -823,27 +823,60 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("📋 Diagnóstico da Comunidade (Coleta de Dados por Área)")
 
-    # 1. URLs DAS PLANILHAS PUBLICADAS EM CSV
-    URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWOIO1_FY31_7Er-OlS_EnZY9k8OP7obVDVAWTyeaYpMi-cPNb-kQ5Ai03ke6I97dxSJxWdA3ycYxo/pub?output=csv"
-    URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSW6a42wJQT2YamjcBSln_uHeqFtpzW6-6GBtw4A8D0jXrXXpVbSqS1nvTuNYdCoUZuwEwI_tKO4z40/pub?output=csv"
-    # INSIRA O LINK CSV DA ÁREA DE ANA PAULA NA VARIÁVEL ABAIXO:
-    URL_ANA_PAULA = "COLE_O_LINK_CSV_AQUI"
+    # ---------------------------------------------------------
+    # 1. LEITURA VIA LINKS DO GOOGLE SHEETS (COMENTADO)
+    # ---------------------------------------------------------
+    # URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWOIO1_FY31_7Er-OlS_EnZY9k8OP7obVDVAWTyeaYpMi-cPNb-kQ5Ai03ke6I97dxSJxWdA3ycYxo/pub?output=csv"
+    # URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSW6a42wJQT2YamjcBSln_uHeqFtpzW6-6GBtw4A8D0jXrXXpVbSqS1nvTuNYdCoUZuwEwI_tKO4z40/pub?output=csv"
+    # URL_ANA_PAULA = "COLE_O_LINK_CSV_AQUI"
 
+    # @st.cache_data(ttl=30)
+    # def ler_dados_forms(url):
+    #     if not url or "http" not in url:
+    #         return pd.DataFrame()
+    #     try:
+    #         df = pd.read_csv(url)
+    #         df.columns = df.columns.str.strip()
+    #         df = df.loc[:, ~df.columns.str.contains('Carimbo|Timestamp|Hora de envio', case=False)]
+    #         return df
+    #     except Exception:
+    #         return pd.DataFrame()
+
+    # df_fernanda = ler_dados_forms(URL_FERNANDA)
+    # df_ismael = ler_dados_forms(URL_ISMAEL)
+    # df_ana_paula = ler_dados_forms(URL_ANA_PAULA)
+
+    # ---------------------------------------------------------
+    # 1. LEITURA DIRETA DOS ARQUIVOS LOCAIS NA PASTA
+    # ---------------------------------------------------------
     @st.cache_data(ttl=30)
-    def ler_dados_forms(url):
-        if not url or "http" not in url:
+    def ler_dados_forms_local(caminho_arquivo):
+        if not os.path.exists(caminho_arquivo):
             return pd.DataFrame()
         try:
-            df = pd.read_csv(url)
-            df.columns = df.columns.str.strip()
+            # Tenta ler como CSV ou Excel conforme a extensão do arquivo
+            if caminho_arquivo.endswith('.csv'):
+                df = pd.read_csv(caminho_arquivo)
+            elif caminho_arquivo.endswith(('.xls', '.xlsx')):
+                df = pd.read_excel(caminho_arquivo)
+            else:
+                return pd.DataFrame()
+
+            df.columns = df.columns.astype(str).str.strip()
             df = df.loc[:, ~df.columns.str.contains('Carimbo|Timestamp|Hora de envio', case=False)]
             return df
-        except Exception:
+        except Exception as e:
+            st.error(f"Erro ao carregar o arquivo local '{caminho_arquivo}': {e}")
             return pd.DataFrame()
 
-    df_fernanda = ler_dados_forms(URL_FERNANDA)
-    df_ismael = ler_dados_forms(URL_ISMAEL)
-    df_ana_paula = ler_dados_forms(URL_ANA_PAULA)
+    # Defina aqui os nomes dos arquivos locais presentes no mesmo diretório
+    CAMINHO_FERNANDA = "area_fernanda.xlsx"   # Ou .xlsx
+    CAMINHO_ISMAEL = "area_ismael.xlsx"       # Ou .xlsx
+    CAMINHO_ANA_PAULA = "area_ana_paula.xlsx" # Ou .xlsx
+
+    df_fernanda = ler_dados_forms_local(CAMINHO_FERNANDA)
+    df_ismael = ler_dados_forms_local(CAMINHO_ISMAEL)
+    df_ana_paula = ler_dados_forms_local(CAMINHO_ANA_PAULA)
 
     # 2. FUNÇÃO PARA ENCONTRAR COLUNAS POR PALAVRA-CHAVE
     def buscar_coluna(palavras_chave, df):

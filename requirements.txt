@@ -7,3 +7,4 @@ requests==2.34.2
 streamlit-calendar
 streamlit-timeline
 plotly
+openpyxl
