@@ -342,6 +342,23 @@
         "text": "Levantamento de Dados (Bolsa Família, Área Fernanda e Ismael) para o estudo dos impactos no território."
       },
       "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "",
+      "caption": "Roda de Afirmações"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "09",
+        "day": "25"
+      },
+      "text": {
+        "headline": "Roda de Afirmações",
+        "text": "Reunião para definir estratégias de atuação do AfirmaSUS-JP: Definição das Frentes e seus integrantes. \n\n- Frente de Comunicação e Cultura \n\n- Frente de Ensino \n\n- Frente de Gestão \n\n- Frente de Ciência e Tecnologia"
+      },
+      "group": "Eventos"
     }
   ]
 }
