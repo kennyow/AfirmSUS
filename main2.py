@@ -1121,8 +1121,8 @@ with st.container():
         "Segunda": ["Mailson", "Lucas - Jéssica - Alex - Laura"],
         "Terça": ["Kennyo - Gabi - Thayane", "Ûgor - Laura"],
         "Quarta": ["", "Jéssica - Alex - Emily"],
-        "Quinta": ["Kennyo - Gabi - Myrela - Kayllane", "Lucas - Emily - Kayllane - Thayane"],
-        "Sexta": ["Álvaro - Mailson", "Myrela - Álvaro - Ûgor"],
+        "Quinta": ["Kennyo - Gabi - Myrela - Kayllane", "Lucas - Emily - Kayllane"],
+        "Sexta": ["Álvaro - Mailson", "Myrela - Álvaro - Ûgor - Thayane"],
     }
 
     df_escala = pd.DataFrame(dados_escala)
