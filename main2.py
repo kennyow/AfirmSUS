@@ -11,6 +11,7 @@ import re
 import textwrap
 import base64
 import plotly.express as px
+import openpyxl
 
 
 # URL da planilha publicada em formato CSV
@@ -816,45 +817,19 @@ with st.container():
         st.plotly_chart(fig_rosca, use_container_width=True)
 
 # ---------------------------------------------------------
-# SEÇÃO DE PESQUISA / DADOS DOS FORMULÁRIOS (ÁREAS DIVIDIDAS)
+# SEÇÃO DE PESQUISA / DADOS DOS FORMULÁRIOS (ÁREAS INTEGRADAS)
 # ---------------------------------------------------------
 st.markdown('<div id="coleta-dados"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("📋 Diagnóstico da Comunidade (Coleta de Dados por Área)")
 
-    # ---------------------------------------------------------
-    # 1. LEITURA VIA LINKS DO GOOGLE SHEETS (COMENTADO)
-    # ---------------------------------------------------------
-    # URL_FERNANDA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWOIO1_FY31_7Er-OlS_EnZY9k8OP7obVDVAWTyeaYpMi-cPNb-kQ5Ai03ke6I97dxSJxWdA3ycYxo/pub?output=csv"
-    # URL_ISMAEL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSW6a42wJQT2YamjcBSln_uHeqFtpzW6-6GBtw4A8D0jXrXXpVbSqS1nvTuNYdCoUZuwEwI_tKO4z40/pub?output=csv"
-    # URL_ANA_PAULA = "COLE_O_LINK_CSV_AQUI"
-
-    # @st.cache_data(ttl=30)
-    # def ler_dados_forms(url):
-    #     if not url or "http" not in url:
-    #         return pd.DataFrame()
-    #     try:
-    #         df = pd.read_csv(url)
-    #         df.columns = df.columns.str.strip()
-    #         df = df.loc[:, ~df.columns.str.contains('Carimbo|Timestamp|Hora de envio', case=False)]
-    #         return df
-    #     except Exception:
-    #         return pd.DataFrame()
-
-    # df_fernanda = ler_dados_forms(URL_FERNANDA)
-    # df_ismael = ler_dados_forms(URL_ISMAEL)
-    # df_ana_paula = ler_dados_forms(URL_ANA_PAULA)
-
-    # ---------------------------------------------------------
-    # 1. LEITURA DIRETA DOS ARQUIVOS LOCAIS NA PASTA
-    # ---------------------------------------------------------
+    # 1. FUNÇÃO DE LEITURA E PADRONIZAÇÃO LOCAL
     @st.cache_data(ttl=30)
-    def ler_dados_forms_local(caminho_arquivo):
+    def carregar_e_normalizar_area(caminho_arquivo, nome_area):
         if not os.path.exists(caminho_arquivo):
             return pd.DataFrame()
         try:
-            # Tenta ler como CSV ou Excel conforme a extensão do arquivo
             if caminho_arquivo.endswith('.csv'):
                 df = pd.read_csv(caminho_arquivo)
             elif caminho_arquivo.endswith(('.xls', '.xlsx')):
@@ -862,23 +837,38 @@ with st.container():
             else:
                 return pd.DataFrame()
 
+            # Limpeza de nomes de colunas e remoção de carimbos
             df.columns = df.columns.astype(str).str.strip()
             df = df.loc[:, ~df.columns.str.contains('Carimbo|Timestamp|Hora de envio', case=False)]
+            
+            # Adiciona coluna identificadora da área
+            df["Área_Mapeada"] = nome_area
             return df
         except Exception as e:
-            st.error(f"Erro ao carregar o arquivo local '{caminho_arquivo}': {e}")
+            st.error(f"⚠️ Erro ao carregar '{caminho_arquivo}': {e}")
             return pd.DataFrame()
 
-    # Defina aqui os nomes dos arquivos locais presentes no mesmo diretório
-    CAMINHO_FERNANDA = "area_fernanda.xlsx"   # Ou .xlsx
-    CAMINHO_ISMAEL = "area_ismael.xlsx"       # Ou .xlsx
-    CAMINHO_ANA_PAULA = "area_ana_paula.xlsx" # Ou .xlsx
+    # MAPA DE ARQUIVOS LOCAIS
+    DADOS_AREAS = {
+        "Área de Fernanda": {"caminho": "area_fernanda.xlsx", "cor": "#FF8C00"},
+        "Área de Ismael":   {"caminho": "area_ismael.xlsx",   "cor": "#856eaf"},
+        "Área de Ana Paula":{"caminho": "area_ana_paula.xlsx", "cor": "#28A745"}
+    }
 
-    df_fernanda = ler_dados_forms_local(CAMINHO_FERNANDA)
-    df_ismael = ler_dados_forms_local(CAMINHO_ISMAEL)
-    df_ana_paula = ler_dados_forms_local(CAMINHO_ANA_PAULA)
+    # Carrega e une todas as bases num único DataFrame Consolidado
+    lista_dfs = []
+    for nome_area, info in DADOS_AREAS.items():
+        df_temp = carregar_e_normalizar_area(info["caminho"], nome_area)
+        if not df_temp.empty:
+            lista_dfs.append(df_temp)
 
-    # 2. FUNÇÃO PARA ENCONTRAR COLUNAS POR PALAVRA-CHAVE
+    df_consolidado = pd.concat(lista_dfs, ignore_index=True) if lista_dfs else pd.DataFrame()
+
+    # 2. FILTRO DE VISUALIZAÇÃO (TODAS OU ÁREA ESPECÍFICA)
+    opcoes_visao = ["🌟 Visão Geral (Todas as Áreas)"] + list(DADOS_AREAS.keys())
+    visao_selecionada = st.selectbox("Selecione a Área para Análise:", opcoes_visao)
+
+    # 3. HELPER PARA BUSCAR COLUNAS POR PALAVRA-CHAVE
     def buscar_coluna(palavras_chave, df):
         for col in df.columns:
             if any(p.lower() in col.lower() for p in palavras_chave):
@@ -886,30 +876,24 @@ with st.container():
                     return col
         return None
 
-    # 3. FUNÇÃO PARA RENDERIZAR O PAINEL COMPLETO DE UMA ÁREA
-    def gerar_painel_area(df, titulo_area, cor_tema):
-        import unicodedata # <-- Biblioteca nativa do Python para tratar acentos
+    # 4. FUNÇÃO REUTILIZÁVEL PARA EXIBIR OS GRÁFICOS
+    def renderizar_graficos_diagnostico(df_dados, cor_tema):
+        import unicodedata
 
-        st.markdown(f"<h4 style='text-align: center; color: {cor_tema};'>{titulo_area}</h4>", unsafe_allow_html=True)
-
-        if df.empty:
-            st.info(f"💡 Nenhuma resposta registrada para a {titulo_area} até o momento.")
+        if df_dados.empty:
+            st.info("💡 Nenhum dado disponível para os filtros selecionados.")
             return
 
-        total_resp = len(df)
-        st.metric(label=f"Total de Respostas ({titulo_area})", value=f"{total_resp} respostas")
-        st.markdown("<br>", unsafe_allow_html=True)
+        col_rua = buscar_coluna(["rua", "logradouro", "endereço"], df_dados)
+        col_dia = buscar_coluna(["dia", "semana"], df_dados)
+        col_turno = buscar_coluna(["turno", "período"], df_dados)
+        col_horario = buscar_coluna(["horário", "horario", "hora"], df_dados)
+        col_topico = buscar_coluna(["tópico", "topico", "assunto", "tema", "abordado", "Pauta"], df_dados)
 
-        col_rua = buscar_coluna(["rua", "logradouro", "endereço"], df)
-        col_dia = buscar_coluna(["dia", "semana"], df)
-        col_turno = buscar_coluna(["turno", "período"], df)
-        col_horario = buscar_coluna(["horário", "horario", "hora"], df)
-        col_topico = buscar_coluna(["tópico", "topico", "assunto", "tema", "abordado", "Pauta"], df)
-
-        # --- NOME DA RUA (Barras Horizontais) ---
+        # RUA / ENDEREÇO
         if col_rua:
             st.markdown(f"**🛣️ {col_rua}**")
-            df_ruas = df[col_rua].dropna().value_counts().reset_index()
+            df_ruas = df_dados[col_rua].dropna().value_counts().reset_index()
             df_ruas.columns = ["Rua", "Qtd"]
             fig_ruas = px.bar(
                 df_ruas, y="Rua", x="Qtd", orientation="h", text="Qtd",
@@ -918,65 +902,53 @@ with st.container():
             fig_ruas.update_traces(textposition="outside")
             fig_ruas.update_layout(
                 yaxis={'categoryorder': 'total ascending'},
-                height=max(200, len(df_ruas) * 35),
+                height=max(200, len(df_ruas) * 32),
                 margin=dict(l=10, r=20, t=10, b=10)
             )
             st.plotly_chart(fig_ruas, use_container_width=True)
 
-        # --- DIA DA SEMANA (Top 3) ---
-        if col_dia:
-            st.markdown(f"**📅 {col_dia} (Top 3)**")
-            df_dias = df[col_dia].dropna().value_counts().head(3).reset_index()
-            df_dias.columns = ["Dia", "Qtd"]
-            fig_dias = px.bar(
-                df_dias, x="Dia", y="Qtd", text="Qtd",
-                color_discrete_sequence=[cor_tema]
-            )
-            fig_dias.update_traces(textposition="auto")
-            fig_dias.update_layout(height=230, margin=dict(l=10, r=10, t=10, b=10))
-            st.plotly_chart(fig_dias, use_container_width=True)
+        c1, c2, c3 = st.columns(3)
 
-        # --- TURNO (Mais Votado) ---
-        if col_turno:
-            st.markdown(f"**☀️ {col_turno}**")
-            df_turno = df[col_turno].dropna().value_counts().reset_index()
-            if not df_turno.empty:
-                t_nome = df_turno.iloc[0, 0]
-                t_qtd = df_turno.iloc[0, 1]
-                st.info(f"🏆 **{t_nome}** lidera com **{t_qtd}** voto(s).")
+        with c1:
+            if col_dia:
+                st.markdown(f"**📅 {col_dia}**")
+                df_dias = df_dados[col_dia].dropna().value_counts().head(5).reset_index()
+                df_dias.columns = ["Dia", "Qtd"]
+                fig_dias = px.bar(df_dias, x="Dia", y="Qtd", text="Qtd", color_discrete_sequence=[cor_tema])
+                fig_dias.update_traces(textposition="auto")
+                fig_dias.update_layout(height=230, margin=dict(l=5, r=5, t=10, b=5))
+                st.plotly_chart(fig_dias, use_container_width=True)
 
-        # --- HORÁRIO (Top 3) ---
-        if col_horario:
-            st.markdown(f"**⏰ {col_horario} (Top 3)**")
-            df_horarios = df[col_horario].dropna().value_counts().head(3).reset_index()
-            df_horarios.columns = ["Horário", "Qtd"]
-            fig_horarios = px.bar(
-                df_horarios, x="Horário", y="Qtd", text="Qtd",
-                color_discrete_sequence=[cor_tema]
-            )
-            fig_horarios.update_traces(textposition="auto")
-            fig_horarios.update_layout(height=230, margin=dict(l=10, r=10, t=10, b=10))
-            st.plotly_chart(fig_horarios, use_container_width=True)
+        with c2:
+            if col_horario:
+                st.markdown(f"**⏰ {col_horario}**")
+                df_horarios = df_dados[col_horario].dropna().value_counts().head(5).reset_index()
+                df_horarios.columns = ["Horário", "Qtd"]
+                fig_horarios = px.bar(df_horarios, x="Horário", y="Qtd", text="Qtd", color_discrete_sequence=[cor_tema])
+                fig_horarios.update_traces(textposition="auto")
+                fig_horarios.update_layout(height=230, margin=dict(l=5, r=5, t=10, b=5))
+                st.plotly_chart(fig_horarios, use_container_width=True)
 
-        # --- TÓPICO A SER ABORDADO (Treemap) ---
+        with c3:
+            if col_turno:
+                st.markdown(f"**☀️ {col_turno}**")
+                df_turno = df_dados[col_turno].dropna().value_counts().reset_index()
+                if not df_turno.empty:
+                    t_nome = df_turno.iloc[0, 0]
+                    t_qtd = df_turno.iloc[0, 1]
+                    st.metric(label="Turno Mais Frequente", value=f"{t_nome}", delta=f"{t_qtd} votos")
+
+        # TÓPICOS / TEMAS ABORDADOS (TREEMAP)
         if col_topico:
-            st.markdown(f"**🧩 {col_topico}**")
+            st.markdown(f"**🧩 Tópicos e Demandas Prioritárias ({col_topico})**")
+            topicos_expandidos = df_dados[col_topico].dropna().astype(str).str.split(',').explode()
             
-            # 1. Separa os tópicos que vêm com vírgula (caso sejam de múltipla escolha) e expande
-            topicos_expandidos = df[col_topico].dropna().astype(str).str.split(',').explode()
-            
-            # 2. Função interna para limpar o texto
             def limpar_texto(texto):
-                texto = str(texto).strip().lower() # Remove espaços nas pontas e deixa tudo minúsculo
-                # Remove os acentos 
+                texto = str(texto).strip().lower()
                 texto = unicodedata.normalize('NFKD', texto).encode('ASCII', 'ignore').decode('utf-8')
-                # Devolve com a primeira letra maiúscula para ficar elegante no gráfico
                 return texto.capitalize()
                 
-            # 3. Aplica a padronização (limpeza)
             topicos_padronizados = topicos_expandidos.apply(limpar_texto)
-            
-            # 4. Conta as ocorrências já com os nomes unificados
             df_topicos = topicos_padronizados.value_counts().reset_index()
             df_topicos.columns = ["Tópico", "Qtd"]
 
@@ -985,67 +957,19 @@ with st.container():
                 color="Qtd", color_continuous_scale="Purples"
             )
             fig_blocos.update_traces(textinfo="label+value")
-            fig_blocos.update_layout(height=280, margin=dict(l=5, r=5, t=5, b=5))
+            fig_blocos.update_layout(height=300, margin=dict(l=5, r=5, t=5, b=5))
             st.plotly_chart(fig_blocos, use_container_width=True)
 
-    # 4. CRIAÇÃO DAS TRÊS COLUNAS PRINCIPAIS (LADO A LADO)
-    col_1, col_2, col_3 = st.columns(3)
-
-    with col_1:
-        gerar_painel_area(df_fernanda, "Área de Fernanda", "#FF8C00")
-
-    with col_2:
-        gerar_painel_area(df_ismael, "Área de Ismael", "#856eaf")
-
-    with col_3:
-        gerar_painel_area(df_ana_paula, "Área de Ana Paula", "#28A745")
-
-# APRESENTAÇÕES CANVA
-st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
-
-with st.container():
-    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
-    st.subheader("📊 Apresentações do Projeto")
-
-    caminho_apresentacoes = "apresentacoes.json"
-    lista_apresentacoes = []
-
-    if os.path.exists(caminho_apresentacoes):
-        try:
-            with open(caminho_apresentacoes, "r", encoding="utf-8") as f:
-                lista_apresentacoes = json.load(f)
-        except Exception as e:
-            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_apresentacoes}': {e}")
+    # 5. EXECUÇÃO DA EXIBIÇÃO
+    if visao_selecionada == "🌟 Visão Geral (Todas as Áreas)":
+        st.metric("Total Acumulado de Respostas", f"{len(df_consolidado)} formulários respondidos")
+        renderizar_graficos_diagnostico(df_consolidado, cor_tema="#4C2059")
     else:
-        st.warning(f"⚠️ Arquivo '{caminho_apresentacoes}' não encontrado no diretório do projeto.")
-
-    if lista_apresentacoes:
-        cards_canva_html = []
-        for pres in lista_apresentacoes:
-            url_embed = pres.get("embed_url", "")
-            link_direto = pres.get("link_directo", url_embed)
-            
-            if "canva.com/design/" in url_embed and "?embed" not in url_embed:
-                url_embed = url_embed.split("?")[0] + "/view?embed"
-
-            card = (
-                f'<div class="timeline-card-h" style="min-width: 340px; border-top: 5px solid #856eaf; display: flex; flex-direction: column; justify-content: space-between;">'
-                f'  <div>'
-                f'      <div style="position: relative; width: 100%; height: 210px; border-radius: 6px; overflow: hidden; margin-bottom: 10px; background-color: #f8f9fa;">'
-                f'          <iframe loading="lazy" src="{url_embed}" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0; margin: 0;" '
-                f'                  allowfullscreen="allowfullscreen" allow="fullscreen; autoplay; clipboard-write; encrypted-media; picture-in-picture" '
-                f'                  referrerpolicy="no-referrer-when-downgrade"></iframe>'
-                f'      </div>'
-                f'      <div class="timeline-title-h"><b>{pres.get("titulo", "")}</b></div>'
-                f'      <div class="timeline-desc-h" style="color: #555; margin-bottom: 10px;">{pres.get("descricao", "")}</div>'
-                f'  </div>'
-                f'  <a href="{link_direto}" target="_blank" rel="noopener noreferrer" style="text-align: center; display: block; background-color: #856eaf; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 12px; font-weight: bold;">🔗 Abrir no Canva</a>'
-                f'</div>'
-            )
-            cards_canva_html.append(card)
-
-        st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(cards_canva_html)}</div>', unsafe_allow_html=True)
-
+        df_area = df_consolidado[df_consolidado["Área_Mapeada"] == visao_selecionada] if not df_consolidado.empty else pd.DataFrame()
+        cor_area = DADOS_AREAS.get(visao_selecionada, {}).get("cor", "#856eaf")
+        
+        st.metric(f"Total de Respostas ({visao_selecionada})", f"{len(df_area)} respostas")
+        renderizar_graficos_diagnostico(df_area, cor_tema=cor_area)
 
 # ---------------------------------------------------------
 # 11. SEÇÃO DE CALENDÁRIO DE ATIVIDADES
