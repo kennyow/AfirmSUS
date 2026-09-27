@@ -659,7 +659,7 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("⏳ Linha do Tempo Interativa de Atividades")
 
-    caminho_atividades = "atividades.json"
+    caminho_atividades = "linhadotempodinamica.json"
 
     if os.path.exists(caminho_atividades):
         try:
@@ -1066,7 +1066,7 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("📅 Calendário de Atividades")
 
-    caminho_eventos = "eventos.json"
+    caminho_eventos = "calendario.json"
     lista_eventos = []
 
     if os.path.exists(caminho_eventos):
