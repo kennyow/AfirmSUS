@@ -1042,11 +1042,11 @@ with st.container():
     # Dados iniciais da escala
     dados_escala = {
         "Turno": ["Manhã", "Tarde"],
-        "Segunda": ["Mailson", "Lucas - Jéssica - Alex - Laura"],
+        "Segunda": ["Mailson", "Lucas - Jéssica - Alex - Laura- Edna"],
         "Terça": ["Kennyo - Gabi - Thayane", "Ûgor - Laura"],
         "Quarta": ["", "Jéssica - Alex - Emily"],
         "Quinta": ["Kennyo - Gabi - Myrela - Kayllane", "Lucas - Emily - Kayllane"],
-        "Sexta": ["Álvaro - Mailson", "Myrela - Álvaro - Ûgor - Thayane"],
+        "Sexta": ["Álvaro - Mailson", "Myrela - Álvaro - Ûgor - Thayane - Edna"],
     }
 
     df_escala = pd.DataFrame(dados_escala)
