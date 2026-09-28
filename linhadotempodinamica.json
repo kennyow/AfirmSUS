@@ -528,6 +528,23 @@
         "text": "Levantamento de Dados (Bolsa Família, Área Fernanda e Ismael) para o estudo dos impactos no território."
       },
       "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "",
+      "caption": "ENEX"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "09",
+        "day": "29"
+      },
+      "text": {
+        "headline": "Frente de Pesquisa Resumos ENEX 2026",
+        "text": "Frente de Pesquisa Resumos ENEX 2026: Discussão e elaboração dos resumos para submissão ao ENEX 2026."
+      },
+      "group": "Eventos"
     }
   ]
 }
