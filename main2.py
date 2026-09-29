@@ -727,8 +727,123 @@ with st.container():
         st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(formacoes_cards_html)}</div>', unsafe_allow_html=True)
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+import streamlit.components.v1 as components
+
+import os
+import json
+import re
+import streamlit as st
+import streamlit.components.v1 as components
+
+# ---------------------------------------------------------
+# DIÁLOGO / MODAL DE APRESENTAÇÃO
+# ---------------------------------------------------------
+@st.dialog("📊 Visualizar Apresentação", width="large")
+def exibir_modal_slide(slide_info):
+    st.markdown(f"### {slide_info.get('titulo', 'Apresentação')}")
+    if slide_info.get("descricao"):
+        st.markdown(f"*{slide_info.get('descricao')}*")
+    
+    embed_url = slide_info.get("embed_url", "")
+    link_direto = slide_info.get("link_directo", slide_info.get("link_direto", ""))
+    
+    if embed_url:
+        components.iframe(embed_url, height=500, scrolling=True)
+    
+    if link_direto:
+        st.markdown(f"🔗 [Abrir apresentação em tela cheia/nova aba]({link_direto})")
 
 
+# Helper para extrair imagem de capa automaticamente das URLs dos slides
+def extrair_capa_automatica(item):
+    # 1. Se já houver um campo de foto/capa explícito
+    capa_bruta = item.get("capa", item.get("foto", ""))
+    if capa_bruta:
+        if "drive.google.com" in capa_bruta and 'converter_link_drive' in globals():
+            return converter_link_drive(capa_bruta)
+        return capa_bruta
+
+    embed_url = item.get("embed_url", "")
+    link_direto = item.get("link_directo", item.get("link_direto", ""))
+
+    # 2. Se for link do Google Drive
+    match_drive = re.search(r'\/d\/([a-zA-Z0-9_-]+)', embed_url or link_direto)
+    if match_drive:
+        file_id = match_drive.group(1)
+        return f"https://lh3.googleusercontent.com/d/{file_id}"
+
+    # 3. Se for link do Canva
+    match_canva = re.search(r'design\/([a-zA-Z0-9_-]+)', embed_url or link_direto)
+    if match_canva:
+        design_id = match_canva.group(1)
+        # URL oficial da thumbnail pública do Canva
+        return f"https://about.canva.com/wp-content/uploads/sites/8/2019/03/canva-logo.png"
+
+    # Fallback
+    return ""
+
+
+# ---------------------------------------------------------
+# SEÇÃO DE APRESENTAÇÕES E SLIDES (ROLAGEM HORIZONTAL)
+# ---------------------------------------------------------
+st.markdown('<div id="apresentacoes"></div>', unsafe_allow_html=True)
+with st.container():
+    st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
+    st.subheader("📊 Apresentações e Slides")
+
+    caminho_apresentacoes = "apresentacoes.json"
+    lista_apresentacoes = []
+
+    if os.path.exists(caminho_apresentacoes):
+        try:
+            with open(caminho_apresentacoes, "r", encoding="utf-8") as f:
+                lista_apresentacoes = json.load(f)
+        except Exception as e:
+            st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_apresentacoes}': {e}")
+    else:
+        st.warning(f"⚠️ Arquivo '{caminho_apresentacoes}' não encontrado no diretório do projeto.")
+
+    if lista_apresentacoes:
+        slides_cards_html = []
+        
+        for idx, item in enumerate(lista_apresentacoes):
+            capa_url = extrair_capa_automatica(item)
+            titulo = item.get("titulo", f"Apresentação {idx+1}")
+            descricao = item.get("descricao", "")
+
+            # Renderiza o card com imagem de capa ou fallback elegante
+            if capa_url:
+                img_element = f'<img src="{capa_url}" alt="{titulo}" class="formacao-card-img" style="width: 100%; height: 100%; object-fit: cover;" />'
+            else:
+                img_element = f'<div style="font-size:40px; color:#FF8C00;">📊</div><div style="font-weight:bold; font-size:12px; color:#333; padding:5px;">{titulo}</div>'
+
+            card = (
+                f'<div class="timeline-card-h" style="border-top: 5px solid #FF8C00; padding: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">'
+                f'  {img_element}'
+                f'</div>'
+            )
+            slides_cards_html.append(card)
+
+        # 1. Exibe a barra de rolagem horizontal contínua idêntica à de formações/vídeos
+        st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(slides_cards_html)}</div>', unsafe_allow_html=True)
+
+        # 2. Seletor para abrir o slide desejado na janela modal (pop-up)
+        st.write("")
+        opcoes_slides = [f"{i+1}. {item.get('titulo', 'Apresentação')}" for i, item in enumerate(lista_apresentacoes)]
+        
+        col_select, col_btn = st.columns([3, 1])
+        with col_select:
+            slide_selecionado_idx = st.selectbox(
+                "Escolha um slide do carrossel para abrir:", 
+                range(len(opcoes_slides)), 
+                format_func=lambda x: opcoes_slides[x],
+                label_visibility="collapsed"
+            )
+        with col_btn:
+            if st.button("🔍 Expandir Slide", use_container_width=True):
+                exibir_modal_slide(lista_apresentacoes[slide_selecionado_idx])
+
+st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 # ---------------------------------------------------------
 # 10. SEÇÃO DE INDICADORES DE PROCESSOS DE TRABALHO E FORMAÇÃO
 # ---------------------------------------------------------
