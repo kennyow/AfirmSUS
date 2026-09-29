@@ -545,6 +545,23 @@
         "text": "Frente de Pesquisa Resumos ENEX 2026: Discussão e elaboração dos resumos para submissão ao ENEX 2026."
       },
       "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "https://drive.google.com/file/d/1Vo4ONyIwv2OvG5hF12sCbe6tCnC_S6Wa/view?usp=drive_link",
+      "caption": "Levantamento de Dados"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "09",
+        "day": "28"
+      },
+      "text": {
+        "headline": "Levantamento de Dados",
+        "text": "Levantamento de Dados (Bolsa Família, Área Fernanda e Ismael) para o estudo dos impactos no território."
+      },
+      "group": "Eventos"
     }
   ]
 }
