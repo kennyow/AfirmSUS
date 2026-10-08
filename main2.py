@@ -3,6 +3,8 @@
 import streamlit as st
 from streamlit_folium import st_folium
 from streamlit_calendar import calendar
+from streamlit_timeline import timeline
+import streamlit.components.v1 as components
 import folium
 import pandas as pd
 import json
@@ -12,6 +14,7 @@ import textwrap
 import base64
 import plotly.express as px
 import openpyxl
+import unicodedata
 
 
 # URL da planilha publicada em formato CSV
@@ -30,15 +33,24 @@ def carregar_respostas_form(url):
 # 1. FUNÇÕES AUXILIARES E CONFIGURAÇÕES INICIAIS
 # ---------------------------------------------------------
 
-# Função auxiliar para tratar URLs do Google Drive
+# Função auxiliar aprimorada para tratar URLs do Google Drive e Google Slides
 def converter_link_drive(url):
     if not url or not isinstance(url, str):
         return url
-    padrao_drive = r'(?:file/d/|id=)([\w-]+)'
+    
+    # Trata Apresentações do Google Slides (extrai thumbnail da 1ª página)
+    match_pres = re.search(r'presentation\/d\/([a-zA-Z0-9_-]+)', url)
+    if match_pres:
+        pres_id = match_pres.group(1)
+        return f"https://docs.google.com/presentation/d/{pres_id}/export/png"
+
+    # Trata Arquivos e Fotos do Google Drive
+    padrao_drive = r'(?:file\/d\/|id=|\/d\/)([\w-]+)'
     match = re.search(padrao_drive, url)
     if match:
         file_id = match.group(1)
-        return f"https://lh3.googleusercontent.com/d/{file_id}"
+        return f"https://drive.google.com/thumbnail?id={file_id}&sz=w800"
+    
     return url
 
 # Configuração da Página
@@ -60,12 +72,10 @@ carregar_css("style.css")
 # FUNÇÃO AUXILIAR PARA GERENCIAR LIKES ACUMULATIVOS
 # ---------------------------------------------------------
 def gerenciar_likes(caminho_arquivo="likes.json"):
-    # Garante que o arquivo exista com valor inicial
     if not os.path.exists(caminho_arquivo):
         with open(caminho_arquivo, "w", encoding="utf-8") as f:
             json.dump({"total_likes": 0}, f)
     
-    # Tenta ler o valor atual
     try:
         with open(caminho_arquivo, "r", encoding="utf-8") as f:
             dados = json.load(f)
@@ -122,8 +132,6 @@ if os.path.exists(caminho_json):
 link_drive_logo = "https://drive.google.com/file/d/1YAMa6Ume30aX75c-p0w9BV15bWlKZkeY/view?usp=drive_link"
 logo_url = converter_link_drive(link_drive_logo)
 
-tag_logo_html = f'<img src="{logo_url}" class="header-logo" alt="Logo AfirmaSUS">' if logo_url else ''
-
 header_html = textwrap.dedent("""
     <div class="header-top-bar" id="apresentacao">
         <div class="header-brand">
@@ -134,6 +142,7 @@ header_html = textwrap.dedent("""
             <a class="header-nav-btn active" href="#territorio">Território</a>
             <a class="header-nav-btn" href="#videos">Vídeos</a>
             <a class="header-nav-btn" href="#linha-do-tempo">Linha do Tempo</a>
+            <a class="header-nav-btn" href="#apresentacoes">Slides</a>
             <a class="header-nav-btn" href="#relatorios">Relatórios</a>
             <a class="header-nav-btn" href="#integrantes">Integrantes</a>
             <a class="header-nav-btn" href="#informacoes">Informações</a>
@@ -142,10 +151,7 @@ header_html = textwrap.dedent("""
 """)
 
 st.markdown(header_html, unsafe_allow_html=True)
-
-# LINHA LARANJA SEPARADORA
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-
 
 
 # ---------------------------------------------------------
@@ -164,7 +170,6 @@ if logo_sidebar_url:
         unsafe_allow_html=True
     )
 
-# --- NOVA SEÇÃO DE CURTIDAS ACUMULATIVAS ---
 st.sidebar.markdown(
     """
     <div style="text-align: center; font-size: 14px; margin-bottom: 8px;">
@@ -176,13 +181,11 @@ st.sidebar.markdown(
 
 total_atual_likes = gerenciar_likes()
 
-# Botão roxo usando a funcionalidade de chave nativa ou callback
 if st.sidebar.button(f"💜 Curtir ({total_atual_likes})", key="btn_like_sidebar", width="stretch"):
     incrementar_like()
     st.rerun()
 
 st.sidebar.markdown("---")
-
 st.sidebar.markdown("### 🗺️ Mapeamento e Camadas")
 
 opcoes_camadas = [
@@ -202,7 +205,6 @@ st.sidebar.markdown("---")
 df_filtrado = pd.DataFrame()
 poligonos_encontro = []
 
-# LÓGICA DA CAMADA: TERRITORIALIZAÇÃO
 if camada_selecionada == "📍 Territorialização (AfirmaSUS)":
     st.sidebar.markdown("### Filtros da Territorialização")
     
@@ -248,14 +250,12 @@ if camada_selecionada == "📍 Territorialização (AfirmaSUS)":
         if st.session_state["categoria_selecionada"] != "Todas":
             st.sidebar.info(f"Filtro ativo: **{st.session_state['categoria_selecionada']}**")
 
-        # Filtragem dos Dados
         df_filtrado = df_locais.copy()
         if distrito_selecionado != "Todos" and 'distrito' in df_filtrado.columns:
             df_filtrado = df_filtrado[df_filtrado["distrito"] == distrito_selecionado]
         if st.session_state["categoria_selecionada"] != "Todas" and 'categoria' in df_filtrado.columns:
             df_filtrado = df_filtrado[df_filtrado["categoria"] == st.session_state["categoria_selecionada"]]
 
-# LÓGICA DA CAMADA: ENCONTRO DE SAÚDE
 elif camada_selecionada == "🩺 Encontro de Saúde (Setores)":
     st.sidebar.markdown("### 🩺 Filtro: Encontro de Saúde")
     
@@ -279,7 +279,6 @@ elif camada_selecionada == "🩺 Encontro de Saúde (Setores)":
     else:
         st.sidebar.warning(f"Arquivo '{caminho_encontro}' não encontrado.")
 
-# FILTRO DE GALERIA DE FOTOS NA BARRA LATERAL
 st.sidebar.markdown('<hr style="border: none; border-top: 1px solid #FF8C00; margin: 4px 0 4px 0; opacity: 0.6;" />', unsafe_allow_html=True)
 st.sidebar.markdown("<h3 style='margin-bottom: 2px; padding-bottom: 0px;'>🖼️ Galeria de Fotos</h3>", unsafe_allow_html=True)
 
@@ -410,9 +409,8 @@ with st.container():
     with col_mapa:
         st.subheader("📍 MAPA INTERATIVO")
         
-        mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="OpenStreetMap") #CartoDB voyager
+        mapa_jp = folium.Map(location=[-7.135080186191312, -34.85575440327488], zoom_start=16, tiles="OpenStreetMap")
         
-        # CAMADA 1: PONTOS DE TERRITORIALIZAÇÃO
         if camada_selecionada == "📍 Territorialização (AfirmaSUS)" and not df_filtrado.empty:
             st.info(f"Mostrando {len(df_filtrado)} local(is)")
             for idx, row in df_filtrado.iterrows():
@@ -438,7 +436,6 @@ with st.container():
                     icon=folium.Icon(color=cor_local, icon=icone_nome, prefix="fa")
                 ).add_to(mapa_jp)
 
-        # CAMADA 2: POLÍGONOS ENCONTRO DE SAÚDE
         elif camada_selecionada == "🩺 Encontro de Saúde (Setores)" and poligonos_encontro:
             st.info(f"Exibindo {len(poligonos_encontro)} região(ões) mapeada(s)")
             for setor in poligonos_encontro:
@@ -646,13 +643,9 @@ with st.container():
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
-# Adicione a importação no topo do arquivo junto com as outras
-from streamlit_timeline import timeline
-import json
-import os
 
 # ---------------------------------------------------------
-# SEÇÃO DA LINHA DO TEMPO (TimelineJS)
+# SEÇÃO DA LINHA DO TEMPO INTERATIVA (TimelineJS)
 # ---------------------------------------------------------
 st.markdown('<div id="linha-do-tempo-interativa"></div>', unsafe_allow_html=True)
 
@@ -667,27 +660,24 @@ with st.container():
             with open(caminho_atividades, "r", encoding="utf-8") as f:
                 dados_atividades = json.load(f)
 
-            # Converter link do Drive no título
             if "title" in dados_atividades and "media" in dados_atividades["title"]:
                 if "url" in dados_atividades["title"]["media"]:
                     dados_atividades["title"]["media"]["url"] = converter_link_drive(
                         dados_atividades["title"]["media"]["url"]
                     )
 
-            # Converter links do Drive em todos os eventos automaticamente
             if "events" in dados_atividades:
                 for evento in dados_atividades["events"]:
                     if "media" in evento and "url" in evento["media"]:
                         evento["media"]["url"] = converter_link_drive(evento["media"]["url"])
 
-            # Converte novamente para JSON string e passa para a timeline
             json_tratado = json.dumps(dados_atividades, ensure_ascii=False)
             timeline(json_tratado, height=650)
 
         except Exception as e:
             st.error(f"⚠️ Erro ao carregar o arquivo '{caminho_atividades}': {e}")
     else:
-        st.warning(f"⚠️ Arquivo '{caminho_atividades}' não foi encontrado no diretório.")
+        st.warning(f"⚠️️ Arquivo '{caminho_atividades}' não foi encontrado no diretório.")
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
 
@@ -727,16 +717,10 @@ with st.container():
         st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(formacoes_cards_html)}</div>', unsafe_allow_html=True)
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
-import streamlit.components.v1 as components
 
-import os
-import json
-import re
-import streamlit as st
-import streamlit.components.v1 as components
 
 # ---------------------------------------------------------
-# DIÁLOGO / MODAL DE APRESENTAÇÃO
+# DIÁLOGO / MODAL DE APRESENTAÇÃO E EXTRAÇÃO DE CAPAS
 # ---------------------------------------------------------
 @st.dialog("📊 Visualizar Apresentação", width="large")
 def exibir_modal_slide(slide_info):
@@ -754,32 +738,35 @@ def exibir_modal_slide(slide_info):
         st.markdown(f"🔗 [Abrir apresentação em tela cheia/nova aba]({link_direto})")
 
 
-# Helper para extrair imagem de capa automaticamente das URLs dos slides
 def extrair_capa_automatica(item):
-    # 1. Se já houver um campo de foto/capa explícito
+    # 1. Se já houver um campo explícito
     capa_bruta = item.get("capa", item.get("foto", ""))
     if capa_bruta:
-        if "drive.google.com" in capa_bruta and 'converter_link_drive' in globals():
+        if isinstance(capa_bruta, str) and ("drive.google.com" in capa_bruta or "docs.google.com" in capa_bruta):
             return converter_link_drive(capa_bruta)
         return capa_bruta
 
     embed_url = item.get("embed_url", "")
     link_direto = item.get("link_directo", item.get("link_direto", ""))
+    url_alvo = embed_url or link_direto or ""
 
-    # 2. Se for link do Google Drive
-    match_drive = re.search(r'\/d\/([a-zA-Z0-9_-]+)', embed_url or link_direto)
+    # 2. Se for link do Google Slides
+    match_pres = re.search(r'presentation\/d\/([a-zA-Z0-9_-]+)', url_alvo)
+    if match_pres:
+        pres_id = match_pres.group(1)
+        return f"https://docs.google.com/presentation/d/{pres_id}/export/png"
+
+    # 3. Se for link do Google Drive (imagem / pdf)
+    match_drive = re.search(r'(?:file\/d\/|id=|\/d\/)([\w-]+)', url_alvo)
     if match_drive:
         file_id = match_drive.group(1)
-        return f"https://lh3.googleusercontent.com/d/{file_id}"
+        return f"https://drive.google.com/thumbnail?id={file_id}&sz=w800"
 
-    # 3. Se for link do Canva
-    match_canva = re.search(r'design\/([a-zA-Z0-9_-]+)', embed_url or link_direto)
+    # 4. Se for link do Canva
+    match_canva = re.search(r'design\/([a-zA-Z0-9_-]+)', url_alvo)
     if match_canva:
-        design_id = match_canva.group(1)
-        # URL oficial da thumbnail pública do Canva
-        return f"https://about.canva.com/wp-content/uploads/sites/8/2019/03/canva-logo.png"
+        return "https://about.canva.com/wp-content/uploads/sites/8/2019/03/canva-logo.png"
 
-    # Fallback
     return ""
 
 
@@ -809,13 +796,11 @@ with st.container():
         for idx, item in enumerate(lista_apresentacoes):
             capa_url = extrair_capa_automatica(item)
             titulo = item.get("titulo", f"Apresentação {idx+1}")
-            descricao = item.get("descricao", "")
 
-            # Renderiza o card com imagem de capa ou fallback elegante
             if capa_url:
                 img_element = f'<img src="{capa_url}" alt="{titulo}" class="formacao-card-img" style="width: 100%; height: 100%; object-fit: cover;" />'
             else:
-                img_element = f'<div style="font-size:40px; color:#FF8C00;">📊</div><div style="font-weight:bold; font-size:12px; color:#333; padding:5px;">{titulo}</div>'
+                img_element = f'<div style="font-size:40px; color:#FF8C00;">📊</div><div style="font-weight:bold; font-size:12px; color:#333; padding:5px; text-align:center;">{titulo}</div>'
 
             card = (
                 f'<div class="timeline-card-h" style="border-top: 5px solid #FF8C00; padding: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">'
@@ -824,10 +809,8 @@ with st.container():
             )
             slides_cards_html.append(card)
 
-        # 1. Exibe a barra de rolagem horizontal contínua idêntica à de formações/vídeos
         st.markdown(f'<div class="timeline-horizontal-scroll">{"".join(slides_cards_html)}</div>', unsafe_allow_html=True)
 
-        # 2. Seletor para abrir o slide desejado na janela modal (pop-up)
         st.write("")
         opcoes_slides = [f"{i+1}. {item.get('titulo', 'Apresentação')}" for i, item in enumerate(lista_apresentacoes)]
         
@@ -844,6 +827,8 @@ with st.container():
                 exibir_modal_slide(lista_apresentacoes[slide_selecionado_idx])
 
 st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+
+
 # ---------------------------------------------------------
 # 10. SEÇÃO DE INDICADORES DE PROCESSOS DE TRABALHO E FORMAÇÃO
 # ---------------------------------------------------------
@@ -852,22 +837,18 @@ with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("📊 Indicadores de Processos de Trabalho e Formação")
 
-    # --- 1. CARDS DE MÉTRICAS EDITÁVEIS ---
-
     st.markdown("##### 📌 Indicadores Gerais de Impacto e Saúde")
         
-    # Formulário / Expander opcional para alterar os valores rapidamente
     with st.expander("⚙️ Clique para editar os valores dos Indicadores", expanded=False):
-        c_ed1, c_ed2, c_ed3 = st.columns(3)  # Alterado de 4 para 3 colunas
+        c_ed1, c_ed2, c_ed3 = st.columns(3)
         with c_ed1:
-            qtd_acoes = st.number_input("Total de Ações Realizadas", min_value=0, value=77, key="inp_qtd1")  # Soma total de eventos
+            qtd_acoes = st.number_input("Total de Ações Realizadas", min_value=0, value=77, key="inp_qtd1")
         with c_ed2:
             qtd_participantes = st.number_input("Participantes Impactados", min_value=0, value=150, key="inp_qtd2")
         with c_ed3:
-            qtd_formacoes = st.number_input("Formações e Oficinas Realizadas", min_value=0, value=22, key="inp_qtd3")  # 16 formações + 6 oficinas de teatro
+            qtd_formacoes = st.number_input("Formações e Oficinas Realizadas", min_value=0, value=22, key="inp_qtd3")
 
-    # Exibição dos Cards organizados
-    m_col1, m_col2, m_col3 = st.columns(3)  # Alterado de 4 para 3 colunas
+    m_col1, m_col2, m_col3 = st.columns(3)
     with m_col1:
         st.metric(label="Total de Ações Realizadas", value=f"{qtd_acoes}", delta="eventos cadastrados")
     with m_col2:
@@ -877,18 +858,13 @@ with st.container():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # --- 2. GRÁFICOS ESTATÍSTICOS BASEADOS NO CHRONOFLO ---
     st.markdown("##### 📈 Panorama das Atividades do ChronoFlo")
 
-    # --- DADOS ATUALIZADOS DO CHRONOFLO ---
-
-    # 1. Evolução Mensal (dados de Dez/25 a Ago/26)
     dados_mensais = pd.DataFrame({
         "Mês": ["Dez/25", "Jan/26", "Fev/26", "Mar/26", "Abr/26", "Mai/26", "Jun/26", "Jul/26", "Ago/26"],
         "Quantidade": [5, 6, 7, 20, 7, 9, 11, 4, 2]
     })
 
-    # 2. Distribuição por Categoria
     dados_categorias = pd.DataFrame({
         "Categoria": [
             "Rodas de Afirmações e Conversa",
@@ -931,15 +907,15 @@ with st.container():
         fig_rosca.update_layout(height=330, margin=dict(l=10, r=10, t=30, b=10), showlegend=True)
         st.plotly_chart(fig_rosca, use_container_width=True)
 
+
 # ---------------------------------------------------------
-# SEÇÃO DE PESQUISA / DADOS DOS FORMULÁRIOS (ÁREAS INTEGRADAS)
+# SEÇÃO DE PESQUISA / DADOS DOS FORMULÁRIOS
 # ---------------------------------------------------------
 st.markdown('<div id="coleta-dados"></div>', unsafe_allow_html=True)
 with st.container():
     st.markdown('<div class="floating-window"></div>', unsafe_allow_html=True)
     st.subheader("📋 Diagnóstico da Comunidade (Coleta de Dados por Área)")
 
-    # 1. FUNÇÃO DE LEITURA E PADRONIZAÇÃO LOCAL
     @st.cache_data(ttl=30)
     def carregar_e_normalizar_area(caminho_arquivo, nome_area):
         if not os.path.exists(caminho_arquivo):
@@ -952,25 +928,20 @@ with st.container():
             else:
                 return pd.DataFrame()
 
-            # Limpeza de nomes de colunas e remoção de carimbos
             df.columns = df.columns.astype(str).str.strip()
             df = df.loc[:, ~df.columns.str.contains('Carimbo|Timestamp|Hora de envio', case=False)]
-            
-            # Adiciona coluna identificadora da área
             df["Área_Mapeada"] = nome_area
             return df
         except Exception as e:
             st.error(f"⚠️ Erro ao carregar '{caminho_arquivo}': {e}")
             return pd.DataFrame()
 
-    # MAPA DE ARQUIVOS LOCAIS
     DADOS_AREAS = {
         "Área de Fernanda": {"caminho": "area_fernanda.xlsx", "cor": "#FF8C00"},
         "Área de Ismael":   {"caminho": "area_ismael.xlsx",   "cor": "#856eaf"},
         "Área de Ana Paula":{"caminho": "area_ana_paula.xlsx", "cor": "#28A745"}
     }
 
-    # Carrega e une todas as bases num único DataFrame Consolidado
     lista_dfs = []
     for nome_area, info in DADOS_AREAS.items():
         df_temp = carregar_e_normalizar_area(info["caminho"], nome_area)
@@ -979,11 +950,9 @@ with st.container():
 
     df_consolidado = pd.concat(lista_dfs, ignore_index=True) if lista_dfs else pd.DataFrame()
 
-    # 2. FILTRO DE VISUALIZAÇÃO (TODAS OU ÁREA ESPECÍFICA)
     opcoes_visao = ["🌟 Visão Geral (Todas as Áreas)"] + list(DADOS_AREAS.keys())
     visao_selecionada = st.selectbox("Selecione a Área para Análise:", opcoes_visao)
 
-    # 3. HELPER PARA BUSCAR COLUNAS POR PALAVRA-CHAVE
     def buscar_coluna(palavras_chave, df):
         for col in df.columns:
             if any(p.lower() in col.lower() for p in palavras_chave):
@@ -991,10 +960,7 @@ with st.container():
                     return col
         return None
 
-    # 4. FUNÇÃO REUTILIZÁVEL PARA EXIBIR OS GRÁFICOS
     def renderizar_graficos_diagnostico(df_dados, cor_tema):
-        import unicodedata
-
         if df_dados.empty:
             st.info("💡 Nenhum dado disponível para os filtros selecionados.")
             return
@@ -1005,9 +971,8 @@ with st.container():
         col_horario = buscar_coluna(["horário", "horario", "hora"], df_dados)
         col_topico = buscar_coluna(["tópico", "topico", "assunto", "tema", "abordado", "Pauta"], df_dados)
 
-        # RUA / ENDEREÇO
         if col_rua:
-            st.markdown(f"**🛣️ {col_rua}**")
+            st.markdown(f"**流域/街道 🛣️ {col_rua}**")
             df_ruas = df_dados[col_rua].dropna().value_counts().reset_index()
             df_ruas.columns = ["Rua", "Qtd"]
             fig_ruas = px.bar(
@@ -1053,7 +1018,6 @@ with st.container():
                     t_qtd = df_turno.iloc[0, 1]
                     st.metric(label="Turno Mais Frequente", value=f"{t_nome}", delta=f"{t_qtd} votos")
 
-        # TÓPICOS / TEMAS ABORDADOS (TREEMAP)
         if col_topico:
             st.markdown(f"**🧩 Tópicos e Demandas Prioritárias ({col_topico})**")
             topicos_expandidos = df_dados[col_topico].dropna().astype(str).str.split(',').explode()
@@ -1075,7 +1039,6 @@ with st.container():
             fig_blocos.update_layout(height=300, margin=dict(l=5, r=5, t=5, b=5))
             st.plotly_chart(fig_blocos, use_container_width=True)
 
-    # 5. EXECUÇÃO DA EXIBIÇÃO
     if visao_selecionada == "🌟 Visão Geral (Todas as Áreas)":
         st.metric("Total Acumulado de Respostas", f"{len(df_consolidado)} formulários respondidos")
         renderizar_graficos_diagnostico(df_consolidado, cor_tema="#4C2059")
@@ -1085,6 +1048,7 @@ with st.container():
         
         st.metric(f"Total de Respostas ({visao_selecionada})", f"{len(df_area)} respostas")
         renderizar_graficos_diagnostico(df_area, cor_tema=cor_area)
+
 
 # ---------------------------------------------------------
 # 11. SEÇÃO DE CALENDÁRIO DE ATIVIDADES
@@ -1151,10 +1115,8 @@ with st.container():
         evento_clicado = state["eventClick"]["event"]
         exibir_modal_evento(evento_clicado)
 
-
     st.markdown("### 📋 Escala de Trabalho Semanal")
 
-    # Dados iniciais da escala
     dados_escala = {
         "Turno": ["Manhã", "Tarde"],
         "Segunda": ["Mailson", "Lucas - Jéssica - Alex - Laura- Edna"],
@@ -1166,7 +1128,6 @@ with st.container():
 
     df_escala = pd.DataFrame(dados_escala)
 
-    # Tabela editável
     escala_editada = st.data_editor(
         df_escala,
         num_rows="fixed",
@@ -1175,7 +1136,6 @@ with st.container():
         key="editor_escala_semanal",
     )
 
-    # Botão opcional para salvar as alterações em arquivo JSON
     if st.button("💾 Salvar Escala"):
         escala_editada.to_json("escala_trabalho.json", orient="records", force_ascii=False)
         st.success("Escala atualizada com sucesso!")
@@ -1241,18 +1201,15 @@ with st.container():
         with cols_info[idx]:
             logo_path = item["logo"]
             
-            if "drive.google.com" in logo_path:
+            if "drive.google.com" in logo_path or "docs.google.com" in logo_path:
                 img_src = converter_link_drive(logo_path)
             elif logo_path.startswith("./"):
-                if 'carregar_imagem_base64' in globals():
-                    img_src = carregar_imagem_base64(logo_path)
+                if os.path.exists(logo_path):
+                    with open(logo_path, "rb") as f:
+                        dados = f.read()
+                    img_src = f"data:image/png;base64,{base64.b64encode(dados).decode()}"
                 else:
-                    if os.path.exists(logo_path):
-                        with open(logo_path, "rb") as f:
-                            dados = f.read()
-                        img_src = f"data:image/png;base64,{base64.b64encode(dados).decode()}"
-                    else:
-                        img_src = ""
+                    img_src = ""
             else:
                 img_src = logo_path
 
