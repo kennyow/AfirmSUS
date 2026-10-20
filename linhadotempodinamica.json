@@ -579,6 +579,40 @@
         "text": "Levantamento de Dados (Bolsa Família, Área Fernanda e Ismael) para o estudo dos impactos no território."
       },
       "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "https://drive.google.com/file/d/11dxX28fEQf9KIwTJxNSvMQ4d4ibZTCem/view?usp=drive_link",
+      "caption": "Sala de Espera"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "10",
+        "day": "20"
+      },
+      "text": {
+        "headline": "Sala de Espera",
+        "text": "Sala de Espera da USF São Rafael, com foco em saúde mental, práticas integrativas e complementares em saúde, e promoção do cuidado centrado na pessoa."
+      },
+      "group": "Eventos"
+    },
+
+    {
+      "media": {
+      "url": "https://drive.google.com/file/d/1gV5ptsnQrQ_AzQYTsX1bugQ3ADLdtIb0/view?usp=drive_link",
+      "caption": "2 Encontro Comunitário de Saúde"
+        },
+      "start_date": {
+        "year": "2026",
+        "month": "10",
+        "day": "20"
+      },
+      "text": {
+        "headline": "2 Encontro Comunitário de Saúde",
+        "text": "2 Encontro Comunitário de Saúde, com foco em saúde mental, práticas integrativas e complementares em saúde, e promoção do cuidado centrado na pessoa."
+      },
+      "group": "Eventos"
     }
   ]
 }
